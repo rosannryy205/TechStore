@@ -13,7 +13,9 @@ import Check_out from "./pages/CheckOut";
 import User_profile from "./pages/userProfile";
 import OrderSuccess from "./pages/orderSuccess";
 import AdminDashboard from "./pages/admin/adminDashboard";
-
+import AddProduct from "./pages/admin/products/addProduct";
+import CategoryManagement from "./pages/admin/categoryManagement";
+import BrandManagement from "./pages/admin/brandManagement";
 /**
  * RequireAdmin — guard bảo vệ route admin.
  * - loading: đang check session => hiện Loading fullscreen.
@@ -65,6 +67,9 @@ function App() {
                 element={<Navigate to="/admin/dashboard" replace />}
               />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="product/add-product" element={<AddProduct/>} />
+              <Route path="products/categories" element={<CategoryManagement />} />
+              <Route path="products/brands" element={<BrandManagement />} />
               {/* Catch-all: giữ layout admin (header + footer + loading) cho
                   mọi link admin chưa build body, tránh 404 trắng */}
               <Route path="*" element={<AdminDashboard />} />

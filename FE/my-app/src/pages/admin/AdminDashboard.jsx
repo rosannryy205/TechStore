@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   CurrencyDollarIcon,
   ShoppingBagIcon,
@@ -7,14 +6,11 @@ import {
 } from "@heroicons/react/24/outline";
 
 // Components
-import Sidebar from "../../components/chart/sidebar";
-import Header from "../../components/chart/header";
 import StatCard from "../../components/chart/statCard";
 import DataTable from "../../components/chart/dataTable";
 import BarChart from "../../components/chart/charts";
 
 export default function AdminDashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // --- Mock Data ---
   const statsData = [
@@ -91,18 +87,8 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
-      {/* Sidebar Component */}
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-
-      {/* Main Content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header Component */}
-        <Header setIsOpen={setSidebarOpen} />
-
-        {/* Dashboard Main Area */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">
+    <div className="p-4 md:p-6 lg:p-8 bg-[#f5f5f7]">
+      <div className="mx-auto max-w-7xl">
             {/* Page Header */}
             <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
               <div>
@@ -161,8 +147,6 @@ export default function AdminDashboard() {
               />
             </div>
           </div>
-        </main>
-      </div>
     </div>
   );
 }

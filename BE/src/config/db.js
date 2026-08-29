@@ -8,7 +8,7 @@ const sequelize = new Sequelize(
     process.env.DB_PASSWORD, // Mật khẩu    
     {
         host: process.env.DB_HOST,
-         port: process.env.DB_PORT || 3306,
+         port: process.env.DB_PORT,
         dialect: process.env.DB_DIALECT
     }
 );

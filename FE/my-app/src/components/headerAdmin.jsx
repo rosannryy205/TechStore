@@ -23,10 +23,10 @@ const NAV_ITEMS = [
     label: "Sản phẩm",
     icon: "box",
     children: [
-      { label: "Tất cả sản phẩm", href: "/admin/products" },
-      { label: "Danh mục", href: "/admin/products/categories" },
-      { label: "Thương hiệu", href: "/admin/products/brands" },
-      { label: "Tồn kho", href: "/admin/products/inventory" },
+      { label: "Danh sách danh mục", href: "/admin/products" },
+      { label: "Danh sách thương hiệu", href: "/admin/products" },
+      { label: "Danh sách sản phẩm", href: "/admin/products" },
+      { label: "Danh sách tồn kho", href: "/admin/products" },
     ],
   },
   {
@@ -37,14 +37,34 @@ const NAV_ITEMS = [
       { label: "Đang xử lý", href: "/admin/orders?status=processing" },
       { label: "Đang giao", href: "/admin/orders?status=shipping" },
       { label: "Đã hủy / Trả hàng", href: "/admin/orders?status=cancelled" },
+      { label: "Theo dõi bản đồ (Shipper)", href: "/admin/orders/map" },
     ],
   },
   {
-    label: "Khách hàng",
+    label: "Khách hàng & Quyền",
     icon: "users",
     children: [
       { label: "Danh sách khách hàng", href: "/admin/customers" },
       { label: "Nhóm khách hàng", href: "/admin/customers/groups" },
+      { label: "Phân quyền (Roles)", href: "/admin/customers/roles" },
+    ],
+  },
+  { 
+    label: "Nội dung (Bài viết)",
+    icon: "document",
+    children: [
+      { label: "Tất cả bài viết", href: "/admin/posts" },
+      { label: "Thêm bài viết", href: "/admin/posts/add" },
+      { label: "Danh mục bài viết", href: "/admin/posts/categories" },
+    ],
+  },
+  {
+    label: "Tương tác & Hỗ trợ",
+    icon: "chat",
+    children: [
+      { label: "Quản lý bình luận", href: "/admin/comments" },
+      { label: "Thông báo hệ thống", href: "/admin/notifications" },
+      { label: "Email phản hồi", href: "/admin/emails" },
     ],
   },
   {
@@ -159,6 +179,20 @@ const ICON_PATHS = {
     <>
       <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
       <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  document: (
+    <>
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </>
+  ),
+  chat: (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </>
   ),
   search: (
@@ -543,9 +577,9 @@ export default function HeaderAdmin() {
                 <NavIcon name="bell" size={18} />
                 {/* Badge */}
                 {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-4.5 h-4.5 rounded-full
-                    bg-[#e30000] text-white text-[9px] font-bold
-                    flex items-center justify-center leading-none">
+                  <span className="absolute top-1.5 right-1.5 w-3.5 h-3.5 rounded-full
+                    bg-[#ff3b30] text-white text-[9px] font-bold
+                    flex items-center justify-center leading-none ring-[1.5px] ring-[#1d1d1f] shadow-sm">
                     {unreadCount}
                   </span>
                 )}
@@ -553,49 +587,51 @@ export default function HeaderAdmin() {
 
               {/* Notification dropdown */}
               {notifOpen && (
-                <div className="absolute right-0 top-full pt-2 z-50 w-80 max-w-[calc(100vw-16px)]">
-                  <div className="rounded-xl bg-white border border-[#e0e0e0]
-                    shadow-[0_16px_40px_rgba(0,0,0,0.13)] overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#f0f0f0]">
-                      <span className="text-[14px] font-semibold tracking-[-0.224px] text-[#1d1d1f]">
+                <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-80 max-w-[calc(100vw-16px)]">
+                  <div className="rounded-2xl bg-white/95 backdrop-blur-md border border-[#e5e5ea]
+                    shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col">
+                    <div className="flex items-center justify-between px-4 py-3.5 border-b border-[#f0f0f0] bg-white/50">
+                      <span className="text-[15px] font-semibold tracking-[-0.24px] text-[#1d1d1f]">
                         Thông báo
                       </span>
-                      <button className="text-[12px] text-[#0066cc] hover:underline bg-transparent border-none cursor-pointer"
+                      <button className="text-[13px] font-medium text-[#0066cc] hover:text-[#0071e3] transition-colors bg-transparent border-none cursor-pointer p-0"
                         style={{ fontFamily: SF_TEXT }}>
                         Đánh dấu đã đọc
                       </button>
                     </div>
-                    <div className="max-h-80 overflow-y-auto">
+                    <div className="max-h-90 overflow-y-auto">
                       {NOTIFICATIONS.map((n) => (
                         <div
                           key={n.id}
-                          className={`flex gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-b-0
+                          className={`flex gap-3 px-4 py-3.5 border-b border-[#f0f0f0] last:border-b-0
                             cursor-pointer transition-colors hover:bg-[#f5f5f7] ${
-                              n.unread ? "bg-[#e8f4ff]/40" : ""
+                              n.unread ? "bg-[#f2f8ff]" : ""
                             }`}
                         >
                           <span
-                            className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${
+                            className={`mt-1.5 w-2 h-2 rounded-full shrink-0 shadow-sm ${
                               n.unread ? "bg-[#0066cc]" : "bg-[#d2d2d7]"
                             }`}
                           />
-                          <div className="min-w-0">
-                            <p className="text-[13px] font-semibold tracking-[-0.12px] text-[#1d1d1f] truncate">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[14px] font-medium tracking-[-0.16px] text-[#1d1d1f] truncate mb-0.5">
                               {n.title}
                             </p>
-                            <p className="text-[12px] text-[#7a7a7a] leading-[1.3] mt-0.5 line-clamp-2">
+                            <p className="text-[13px] text-[#515154] leading-[1.4] line-clamp-2">
                               {n.detail}
                             </p>
-                            <p className="text-[11px] text-[#b0b0b0] mt-1">{n.time}</p>
+                            <p className="text-[11px] font-medium text-[#86868b] mt-1.5 tracking-wide">
+                              {n.time}
+                            </p>
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="px-4 py-3 text-center border-t border-[#f0f0f0]">
-                      <button className="text-[12px] text-[#0066cc] hover:underline bg-transparent border-none cursor-pointer"
+                    <div className="px-4 py-3.5 text-center border-t border-[#f0f0f0] bg-[#f5f5f7]/50 hover:bg-[#f5f5f7] transition-colors cursor-pointer">
+                      <Link to="/admin/notifications" className="text-[13px] font-medium text-[#0066cc] no-underline block w-full"
                         style={{ fontFamily: SF_TEXT }}>
                         Xem tất cả thông báo
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
