@@ -6,10 +6,12 @@ const OrderModel = sequelize.define(
   {
     user_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     discount_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     order_code: {

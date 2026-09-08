@@ -6,10 +6,12 @@ const ProductModel = sequelize.define(
   {
     category_id: {
       type: DataTypes.BIGINT(20),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     brand_id: {
       type: DataTypes.BIGINT(20),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     name: {

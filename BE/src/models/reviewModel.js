@@ -6,18 +6,22 @@ const ReviewModel = sequelize.define(
   {
     product_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     product_variant_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     user_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     order_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     rating: {

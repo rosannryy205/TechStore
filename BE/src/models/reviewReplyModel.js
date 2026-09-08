@@ -10,6 +10,7 @@ const ReviewRepliesModel = sequelize.define(
     },
     replier_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     content: {

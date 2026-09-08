@@ -5,11 +5,11 @@ const ProductImageModel = sequelize.define(
   "product_images",
   {
     product_id: {
-      type: DataTypes.BIGINT(20),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     variant_id: {
-      type: DataTypes.BIGINT(20),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     img_url: {

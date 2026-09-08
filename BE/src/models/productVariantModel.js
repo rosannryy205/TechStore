@@ -5,7 +5,7 @@ const ProductVariantModel = sequelize.define(
   "product_variants",
   {
     product_id: {
-      type: DataTypes.BIGINT(20),
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     sku: {

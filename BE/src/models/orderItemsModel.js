@@ -6,10 +6,12 @@ const OrderItemsModel = sequelize.define(
   {
     order_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     product_variant_id: {
       type: DataTypes.BIGINT,
+      type: DataTypes.INTEGER,
       allowNull: false,
     },
     price: {
