@@ -23,10 +23,10 @@ const NAV_ITEMS = [
     label: "Sản phẩm",
     icon: "box",
     children: [
-      { label: "Danh sách danh mục", href: "/admin/products" },
-      { label: "Danh sách thương hiệu", href: "/admin/products" },
+      { label: "Danh sách danh mục", href: "/admin/products/categories" },
+      { label: "Danh sách thương hiệu", href: "/admin/products/brands" },
       { label: "Danh sách sản phẩm", href: "/admin/products" },
-      { label: "Danh sách tồn kho", href: "/admin/products" },
+      { label: "Danh sách tồn kho", href: "/admin/stock" },
     ],
   },
   {

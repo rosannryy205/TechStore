@@ -13,9 +13,11 @@ import Check_out from "./pages/CheckOut";
 import User_profile from "./pages/userProfile";
 import OrderSuccess from "./pages/orderSuccess";
 import AdminDashboard from "./pages/admin/adminDashboard";
+import ProductManagement from "./pages/admin/products/productManagement";
 import AddProduct from "./pages/admin/products/addProduct";
 import CategoryManagement from "./pages/admin/categoryManagement";
 import BrandManagement from "./pages/admin/brandManagement";
+import NotFound from "./pages/404";
 /**
  * RequireAdmin — guard bảo vệ route admin.
  * - loading: đang check session => hiện Loading fullscreen.
@@ -52,6 +54,9 @@ function App() {
               <Route path="checkout" element={<Check_out />} />
               <Route path="user_profile" element={<User_profile />} />
               <Route path="order-success" element={<OrderSuccess />} />
+              
+              {/* Trang 404 cho các route người dùng chưa thiết kế */}
+              <Route path="*" element={<NotFound />} />
             </Route>
 
             <Route
@@ -67,18 +72,15 @@ function App() {
                 element={<Navigate to="/admin/dashboard" replace />}
               />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="products" element={<ProductManagement />} />
               <Route path="product/add-product" element={<AddProduct/>} />
               <Route path="products/categories" element={<CategoryManagement />} />
               <Route path="products/brands" element={<BrandManagement />} />
-              {/* Catch-all: giữ layout admin (header + footer + loading) cho
-                  mọi link admin chưa build body, tránh 404 trắng */}
-              <Route path="*" element={<AdminDashboard />} />
+              {/* Catch-all: hiển thị trang NotFound cho
+                  mọi link admin chưa build body */}
+              <Route path="*" element={<NotFound />} />
             </Route>
 
-            {/* Hide : cảnh báo "No routes matched location" khi URL không
-                khớp bất kỳ route nào ở trên (VD: "/learn-more", "/pre-order")
-                mà không làm mất trang — chỉ render rỗng. */}
-            <Route path="*" element={null} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>
