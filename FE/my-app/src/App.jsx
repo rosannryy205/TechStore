@@ -14,6 +14,7 @@ import User_profile from "./pages/userProfile";
 import OrderSuccess from "./pages/orderSuccess";
 import AdminDashboard from "./pages/admin/adminDashboard";
 import ProductManagement from "./pages/admin/products/productManagement";
+import InventoryManagement from "./pages/admin/products/inventoryManagement";
 import AddProduct from "./pages/admin/products/addProduct";
 import CategoryManagement from "./pages/admin/categoryManagement";
 import BrandManagement from "./pages/admin/brandManagement";
@@ -73,6 +74,7 @@ function App() {
               />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="products" element={<ProductManagement />} />
+              <Route path="products/inventory" element={<InventoryManagement />} />
               <Route path="product/add-product" element={<AddProduct/>} />
               <Route path="products/categories" element={<CategoryManagement />} />
               <Route path="products/brands" element={<BrandManagement />} />
