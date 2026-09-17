@@ -2,14 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const app = express();
-const userRoutes = require("./routers/userRouter"); //gọi các route từ userRouter.js
-const productRoutes = require("./routers/productRouter"); //gọi các route từ productRouter.js
-const categoryRoutes = require("./routers/categoryRouter"); //gọi các route từ categoryRouter.js
-const registerRoutes = require("./routers/registerRouter"); //gọi các route từ registerRouter.js
-const authRoutes = require("./routers/authRouter"); // auth module
-const cartRoutes = require("./routers/cartRouter");
-const reviewRoutes = require("./routers/reviewRouter");
-const orderRoutes = require("./routers/orderRouter");
+const userRoutes = require("./routers/client/userRouter"); //gọi các route từ userRouter.js
+const productRoutes = require("./routers/client/productRouter"); //gọi các route từ productRouter.js
+const categoryRoutes = require("./routers/client/categoryRouter"); //gọi các route từ categoryRouter.js
+const registerRoutes = require("./routers/client/registerRouter"); //gọi các route từ registerRouter.js
+const authRoutes = require("./routers/client/authRouter"); // auth module
+const cartRoutes = require("./routers/client/cartRouter");
+const reviewRoutes = require("./routers/client/reviewRouter");
+const orderRoutes = require("./routers/client/orderRouter");
+const brandRoutes = require("./routers/admin/brandRouter");
 // CORS: cho phép FE chạy tại các origin được cấu hình trong .env
 // Mặc định: http://localhost:5173, http://localhost:5174, http://localhost:5175, http://localhost:5176
 const corsOrigins = process.env.CORS_ORIGIN
@@ -57,6 +58,8 @@ app.use("/api/orders", orderRoutes);
 
 // Định nghĩa route cho đánh giá sản phẩm (comment)
 app.use("/api/reviews", reviewRoutes);
+
+app.use("/api/admin/brands", brandRoutes);
 
 // Serve file tĩnh (ảnh/video của review) từ thư mục uploads
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));

@@ -16,8 +16,8 @@ import AdminDashboard from "./pages/admin/adminDashboard";
 import ProductManagement from "./pages/admin/products/productManagement";
 import InventoryManagement from "./pages/admin/products/inventoryManagement";
 import AddProduct from "./pages/admin/products/addProduct";
-import CategoryManagement from "./pages/admin/categoryManagement";
-import BrandManagement from "./pages/admin/brandManagement";
+import CategoryManagement from "./pages/admin/categories/categoryManagement";
+import BrandManagement from "./pages/admin/brands/brandManagement";
 import NotFound from "./pages/404";
 /**
  * RequireAdmin — guard bảo vệ route admin.

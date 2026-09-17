@@ -86,12 +86,11 @@ export default function Loading({
     if (shouldShow) {
       startAtRef.current = now;
       clearAllTimers();
-      setMounted(true);
-
       // Đảm bảo browser paint xong trạng thái opacity:0 trước khi bật opacity:1,
       // nếu không transition sẽ bị bỏ qua (nhảy thẳng lên 1).
-      setEntered(false);
       rafRef.current = requestAnimationFrame(() => {
+        setMounted(true);
+        setEntered(false);
         rafRef.current = requestAnimationFrame(() => setEntered(true));
       });
 

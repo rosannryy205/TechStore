@@ -12,6 +12,10 @@ const BrandModel = sequelize.define(
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    logo: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     status: {
       type: DataTypes.TINYINT,
       allowNull: false,
