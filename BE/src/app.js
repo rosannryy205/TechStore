@@ -11,6 +11,7 @@ const cartRoutes = require("./routers/client/cartRouter");
 const reviewRoutes = require("./routers/client/reviewRouter");
 const orderRoutes = require("./routers/client/orderRouter");
 const brandRoutes = require("./routers/admin/brandRouter");
+const adminCategoryRoutes = require("./routers/admin/categoryRouter");
 // CORS: cho phép FE chạy tại các origin được cấu hình trong .env
 // Mặc định: http://localhost:5173, http://localhost:5174, http://localhost:5175, http://localhost:5176
 const corsOrigins = process.env.CORS_ORIGIN
@@ -60,6 +61,8 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 app.use("/api/admin/brands", brandRoutes);
+
+app.use("/api/admin/categories", adminCategoryRoutes);
 
 // Serve file tĩnh (ảnh/video của review) từ thư mục uploads
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
