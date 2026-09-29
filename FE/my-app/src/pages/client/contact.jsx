@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import InlineAlert from "../components/InlineAlert";
+import InlineAlert from "../../components/InlineAlert";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";

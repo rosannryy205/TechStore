@@ -14,6 +14,9 @@ const User = require("./userModel");
 const Review = require("./reviewModel");
 const ReviewMedia = require("./reviewMediaModel");
 const ReviewReplies = require("./reviewReplyModel");
+const VariantAttribute = require("./variantAttributeModel");
+const VariantAttributeOption = require("./variantAttributeOptionModel");
+const VariantAttributeValue = require("./variantAttributeValueModel");
 
 // 1 Thương hiệu có nhiều sản phẩm
 Brand.hasMany(Product, { foreignKey: "brand_id", as: "products" });
@@ -106,6 +109,37 @@ ReviewReplies.belongsTo(Review, { foreignKey: "review_id", as: "review" });
 User.hasMany(ReviewReplies, { foreignKey: "replier_id", as: "review_replies" });
 ReviewReplies.belongsTo(User, { foreignKey: "replier_id", as: "replier" });
 
+// ─── Variant Attribute associations ───
+// 1 VariantAttribute có nhiều VariantAttributeOption
+VariantAttribute.hasMany(VariantAttributeOption, {
+  foreignKey: "attribute_id",
+  as: "options",
+});
+VariantAttributeOption.belongsTo(VariantAttribute, {
+  foreignKey: "attribute_id",
+  as: "attribute",
+});
+
+// 1 ProductVariant có nhiều VariantAttributeValue
+ProductVariant.hasMany(VariantAttributeValue, {
+  foreignKey: "variant_id",
+  as: "attributeValues",
+});
+VariantAttributeValue.belongsTo(ProductVariant, {
+  foreignKey: "variant_id",
+  as: "variant",
+});
+
+// 1 VariantAttribute có nhiều VariantAttributeValue
+VariantAttribute.hasMany(VariantAttributeValue, {
+  foreignKey: "attribute_id",
+  as: "values",
+});
+VariantAttributeValue.belongsTo(VariantAttribute, {
+  foreignKey: "attribute_id",
+  as: "attribute",
+});
+
 module.exports = {
   sequelize,
   Brand,
@@ -122,4 +156,7 @@ module.exports = {
   Review,
   ReviewMedia,
   ReviewReplies,
+  VariantAttribute,
+  VariantAttributeOption,
+  VariantAttributeValue,
 };

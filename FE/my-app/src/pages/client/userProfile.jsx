@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/authContext";
-import Loading from "../components/loading";
-import ConfirmDialog from "../components/ConfirmDialog";
+import { useAuth } from "../../contexts/authContext";
+import Loading from "../../components/loading";
+import ConfirmDialog from "../../components/ConfirmDialog";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";

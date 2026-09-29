@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import Notification from "../components/Notification";
-import { CommentSection } from "../components/comments";
-import { useAuth } from "../contexts/authContext";
-import { useAuthModal } from "../contexts/authModalContext";
+import Notification from "../../components/Notification";
+import { CommentSection } from "../../components/comments";
+import { useAuth } from "../../contexts/authContext";
+import { useAuthModal } from "../../contexts/authModalContext";
 
 const API_BASE_URL = "http://localhost:3000/"; // Cấu hình URL API backend
 

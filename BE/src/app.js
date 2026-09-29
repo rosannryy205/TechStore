@@ -2,16 +2,18 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const app = express();
-const userRoutes = require("./routers/client/userRouter"); //gọi các route từ userRouter.js
-const productRoutes = require("./routers/client/productRouter"); //gọi các route từ productRouter.js
-const categoryRoutes = require("./routers/client/categoryRouter"); //gọi các route từ categoryRouter.js
-const registerRoutes = require("./routers/client/registerRouter"); //gọi các route từ registerRouter.js
-const authRoutes = require("./routers/client/authRouter"); // auth module
-const cartRoutes = require("./routers/client/cartRouter");
-const reviewRoutes = require("./routers/client/reviewRouter");
-const orderRoutes = require("./routers/client/orderRouter");
-const brandRoutes = require("./routers/admin/brandRouter");
-const adminCategoryRoutes = require("./routers/admin/categoryRouter");
+const userRoutes = require("./routes/client/userRoutes"); //gọi các route từ userRouter.js
+const productRoutes = require("./routes/client/productRoutes"); //gọi các route từ productRouter.js
+const categoryRoutes = require("./routes/client/categoryRoutes"); //gọi các route từ categoryRouter.js
+const registerRoutes = require("./routes/client/registerRoutes"); //gọi các route từ registerRouter.js
+const authRoutes = require("./routes/client/authRoutes"); // auth module
+const cartRoutes = require("./routes/client/cartRoutes");
+const reviewRoutes = require("./routes/client/reviewRoutes");
+const orderRoutes = require("./routes/client/orderRoutes");
+const adminBrandRoutes = require("./routes/admin/brandRoutes");
+const adminCategoryRoutes = require("./routes/admin/categoryRoutes");
+const adminProductRoutes = require("./routes/admin/productRoutes");
+const adminVariantAttributeRoutes = require("./routes/admin/variantAttributeRoutes");
 // CORS: cho phép FE chạy tại các origin được cấu hình trong .env
 // Mặc định: http://localhost:5173, http://localhost:5174, http://localhost:5175, http://localhost:5176
 const corsOrigins = process.env.CORS_ORIGIN
@@ -41,10 +43,13 @@ app.use(cookieParser());
 
 // Định nghĩa các route cho người dùng
 app.use("/api/users", userRoutes);
+
 // Định nghĩa các route cho sản phẩm
 app.use("/api/products", productRoutes);
+
 // Định nghĩa các route cho danh mục
 app.use("/api/categories", categoryRoutes);
+
 // Định nghĩa route cho đăng ký người dùng
 app.use("/api/register", registerRoutes);
 
@@ -60,9 +65,17 @@ app.use("/api/orders", orderRoutes);
 // Định nghĩa route cho đánh giá sản phẩm (comment)
 app.use("/api/reviews", reviewRoutes);
 
-app.use("/api/admin/brands", brandRoutes);
+// Định nghĩa route cho quản lý thương hiệu
+app.use("/api/admin/brands", adminBrandRoutes);
 
+// Định nghĩa route cho quản lý danh mục
 app.use("/api/admin/categories", adminCategoryRoutes);
+
+// Định nghĩa route cho quản lý sản phẩm
+app.use("/api/admin/products", adminProductRoutes);
+
+// Định nghĩa route cho quản lý thuộc tính biến thể
+app.use("/api/admin/variant-attributes", adminVariantAttributeRoutes);
 
 // Serve file tĩnh (ảnh/video của review) từ thư mục uploads
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));

@@ -4,21 +4,21 @@ import { AuthProvider, useAuth } from "./contexts/authContext";
 import Loading from "./components/loading";
 import MainLayout from "./layouts/mainLayout";
 import AdminLayout from "./layouts/adminLayout";
-import Home from "./pages/Home";
-import Products from "./pages/Products";
-import Contact from "./pages/Contact";
-import Product_detail from "./pages/productDetail";
-import Cart from "./pages/Cart";
-import Check_out from "./pages/CheckOut";
-import User_profile from "./pages/userProfile";
-import OrderSuccess from "./pages/orderSuccess";
+import Home from "./pages/client/home";
+import Products from "./pages/client/products";
+import Contact from "./pages/client/contact";
+import Product_detail from "./pages/client/productDetail";
+import Cart from "./pages/client/cart";
+import Check_out from "./pages/client/checkOut";
+import User_profile from "./pages/client/userProfile";
+import OrderSuccess from "./pages/client/orderSuccess";
 import AdminDashboard from "./pages/admin/adminDashboard";
 import ProductManagement from "./pages/admin/products/productManagement";
 import InventoryManagement from "./pages/admin/products/inventoryManagement";
 import AddProduct from "./pages/admin/products/addProduct";
 import CategoryManagement from "./pages/admin/categories/categoryManagement";
 import BrandManagement from "./pages/admin/brands/brandManagement";
-import NotFound from "./pages/404";
+import NotFound from "./pages/client/404";
 /**
  * RequireAdmin — guard bảo vệ route admin.
  * - loading: đang check session => hiện Loading fullscreen.

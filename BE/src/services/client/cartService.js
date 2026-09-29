@@ -4,7 +4,13 @@ const {
   CartItem,
   ProductVariant,
   Product,
+  VariantAttributeValue,
+  VariantAttribute,
 } = require("../../models");
+const {
+  flattenAttributes,
+  buildAttributeInclude,
+} = require("../../utils/variantHelper");
 
 /**
  * getOrCreateCartByUser
@@ -86,14 +92,14 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
             "price",
             "sale_price",
             "stock",
-            "color",
-            "ram",
-            "storage",
           ],
-
-          // Nếu cần thông tin Product cho FE, có thể lấy nested qua association sẵn có:
-          // ProductVariant.belongsTo(Product, as: "product_variants")
           include: [
+            ...buildAttributeInclude({
+              VariantAttributeValue,
+              VariantAttribute,
+            }),
+            // Nếu cần thông tin Product cho FE, có thể lấy nested qua association sẵn có:
+            // ProductVariant.belongsTo(Product, as: "product_variants")
             {
               model: Product,
               as: "product",
@@ -111,6 +117,8 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
     // Đồng bộ contract cho FE: FE đang map `it.variant_id`
     const mappedItems = cartItems.map((it) => {
       const plain = it.get({ plain: true });
+      // Flatten dynamic attributes cho backward compatibility (variant.color, etc.)
+      if (plain.variant) flattenAttributes(plain.variant);
       return {
         ...plain,
         // Contract cho FE: FE cần `variant.product_id` khi map.
@@ -160,12 +168,12 @@ async function getCartByUser(userId) {
           "price",
           "sale_price",
           "stock",
-          "color",
-          "ram",
-          "storage",
         ],
-
         include: [
+          ...buildAttributeInclude({
+            VariantAttributeValue,
+            VariantAttribute,
+          }),
           {
             model: Product,
             as: "product",
@@ -181,6 +189,8 @@ async function getCartByUser(userId) {
   // Đồng bộ contract cho FE: FE đang map `it.variant_id`
   const mappedItems = cartItems.map((it) => {
     const plain = it.get({ plain: true });
+    // Flatten dynamic attributes cho backward compatibility (variant.color, etc.)
+    if (plain.variant) flattenAttributes(plain.variant);
     return {
       ...plain,
       variant_id: it.product_variant_id,

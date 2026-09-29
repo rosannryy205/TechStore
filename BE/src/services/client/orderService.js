@@ -12,8 +12,14 @@ const {
   Product,
   CartItem,
   Cart,
+  VariantAttributeValue,
+  VariantAttribute,
 } = require("../../models");
 const cartService = require("./cartService");
+const {
+  flattenAttributes,
+  buildAttributeInclude,
+} = require("../../utils/variantHelper");
 
 /**
  * createOrder
@@ -203,8 +209,12 @@ async function createOrder({
               {
                 model: ProductVariant,
                 as: "variant",
-                attributes: ["id", "product_id", "color", "ram", "storage"],
+                attributes: ["id", "product_id"],
                 include: [
+                  ...buildAttributeInclude({
+                    VariantAttributeValue,
+                    VariantAttribute,
+                  }),
                   {
                     model: Product,
                     as: "product",
@@ -217,7 +227,14 @@ async function createOrder({
         ],
       });
 
-      return createdOrder.get({ plain: true });
+      const plain = createdOrder.get({ plain: true });
+      // Flatten variant attributes cho backward compatibility
+      if (plain.items) {
+        for (const item of plain.items) {
+          if (item.variant) flattenAttributes(item.variant);
+        }
+      }
+      return plain;
     });
 }
 
@@ -256,8 +273,12 @@ async function getOrdersByUser(userId) {
           {
             model: ProductVariant,
             as: "variant",
-            attributes: ["id", "product_id", "color", "ram", "storage"],
+            attributes: ["id", "product_id"],
             include: [
+              ...buildAttributeInclude({
+                VariantAttributeValue,
+                VariantAttribute,
+              }),
               {
                 model: Product,
                 as: "product",
@@ -271,7 +292,16 @@ async function getOrdersByUser(userId) {
     order: [["created_at", "DESC"]],
   });
 
-  return orders.map((o) => o.get({ plain: true }));
+  return orders.map((o) => {
+    const plain = o.get({ plain: true });
+    // Flatten variant attributes cho backward compatibility
+    if (plain.items) {
+      for (const item of plain.items) {
+        if (item.variant) flattenAttributes(item.variant);
+      }
+    }
+    return plain;
+  });
 }
 
 /**

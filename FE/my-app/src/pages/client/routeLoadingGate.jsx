@@ -1,4 +1,4 @@
-import Loading from "../components/loading";
+import Loading from "../../components/loading";
 
 /**
  * A lightweight route-level loading gate to keep the Loading UI visible

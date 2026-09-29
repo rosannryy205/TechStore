@@ -5,7 +5,21 @@ const {
   Brand,
   ProductImage,
   Category,
+  VariantAttributeValue,
+  VariantAttribute,
 } = require("../../models/index.js");
+const {
+  buildAttributeInclude,
+  transformProduct,
+  transformProducts,
+} = require("../../utils/variantHelper");
+
+// Reusable include for ProductVariant with attribute values
+const VARIANT_INCLUDE = {
+  model: ProductVariant,
+  as: "variants",
+  include: buildAttributeInclude({ VariantAttributeValue, VariantAttribute }),
+};
 
 const getAllProducts = async (category_slug, brand_slug) => {
   // Yêu cầu: cả 2 điều kiện phải hợp lệ (AND). Sai 1 trong 2 => loại toàn bộ => []
@@ -43,10 +57,7 @@ const getAllProducts = async (category_slug, brand_slug) => {
           model: Brand,
           as: "brand",
         },
-        {
-          model: ProductVariant,
-          as: "variants",
-        },
+        VARIANT_INCLUDE,
         {
           model: ProductImage,
           as: "images",
@@ -54,7 +65,7 @@ const getAllProducts = async (category_slug, brand_slug) => {
       ],
     });
 
-    return products;
+    return transformProducts(products);
   } catch (error) {
     throw error;
   }
@@ -74,10 +85,7 @@ const getAllProductFeatures = async ({ page = 1, limit = 10 } = {}) => {
         model: Brand,
         as: "brand",
       },
-      {
-        model: ProductVariant,
-        as: "variants",
-      },
+      VARIANT_INCLUDE,
       {
         model: ProductImage,
         as: "images",
@@ -88,7 +96,7 @@ const getAllProductFeatures = async ({ page = 1, limit = 10 } = {}) => {
     offset,
     distinct: true,
   });
-  return { data: rows, total: count, page, limit };
+  return { data: transformProducts(rows), total: count, page, limit };
 };
 
 /**
@@ -105,10 +113,7 @@ const getAllProductPopular = async ({ page = 1, limit = 10 } = {}) => {
         model: Brand,
         as: "brand",
       },
-      {
-        model: ProductVariant,
-        as: "variants",
-      },
+      VARIANT_INCLUDE,
       {
         model: ProductImage,
         as: "images",
@@ -119,7 +124,7 @@ const getAllProductPopular = async ({ page = 1, limit = 10 } = {}) => {
     offset,
     distinct: true,
   });
-  return { data: rows, total: count, page, limit };
+  return { data: transformProducts(rows), total: count, page, limit };
 };
 
 /**
@@ -136,10 +141,7 @@ const getAllProductNewArrival = async ({ page = 1, limit = 10 } = {}) => {
         model: Brand,
         as: "brand",
       },
-      {
-        model: ProductVariant,
-        as: "variants",
-      },
+      VARIANT_INCLUDE,
       {
         model: ProductImage,
         as: "images",
@@ -150,7 +152,7 @@ const getAllProductNewArrival = async ({ page = 1, limit = 10 } = {}) => {
     offset,
     distinct: true,
   });
-  return { data: rows, total: count, page, limit };
+  return { data: transformProducts(rows), total: count, page, limit };
 };
 
 const getProductById = async (id) => {
@@ -160,17 +162,14 @@ const getProductById = async (id) => {
         model: Brand,
         as: "brand",
       },
-      {
-        model: ProductVariant,
-        as: "variants",
-      },
+      VARIANT_INCLUDE,
       {
         model: ProductImage,
         as: "images",
       },
     ],
   });
-  return product;
+  return product ? transformProduct(product) : null;
 };
 
 async function getProductRelated(productId, limit = 4) {
@@ -181,6 +180,18 @@ async function getProductRelated(productId, limit = 4) {
     const product = await Product.findByPk(productId);
     if (!product) return [];
 
+    const commonInclude = [
+      {
+        model: Brand,
+        as: "brand",
+      },
+      VARIANT_INCLUDE,
+      {
+        model: ProductImage,
+        as: "images",
+      },
+    ];
+
     // 1. Ưu tiên cùng brand, còn bán, sắp theo lượt bán nhiều nhất
     let related = await Product.findAll({
       where: {
@@ -188,20 +199,7 @@ async function getProductRelated(productId, limit = 4) {
         id: { [Op.ne]: productId },
         status: 1,
       },
-      include: [
-        {
-          model: Brand,
-          as: "brand",
-        },
-        {
-          model: ProductVariant,
-          as: "variants",
-        },
-        {
-          model: ProductImage,
-          as: "images",
-        },
-      ],
+      include: commonInclude,
       order: [["sold_count", "DESC"]],
       limit: safeLimit,
     });
@@ -216,27 +214,14 @@ async function getProductRelated(productId, limit = 4) {
           id: { [Op.notIn]: [productId, ...excludedIds] },
           status: 1,
         },
-        include: [
-          {
-            model: Brand,
-            as: "brand",
-          },
-          {
-            model: ProductVariant,
-            as: "variants",
-          },
-          {
-            model: ProductImage,
-            as: "images",
-          },
-        ],
+        include: commonInclude,
         order: [["sold_count", "DESC"]],
         limit: safeLimit - related.length,
       });
       related = [...related, ...extra];
     }
 
-    return related;
+    return transformProducts(related);
   } catch (error) {
     throw error;
   }

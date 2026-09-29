@@ -1,5 +1,5 @@
-import Banner from "../components/Banner";
-import Loading from "../components/loading";
+import Banner from "../../components/Banner";
+import Loading from "../../components/loading";
 import React from "react";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";

@@ -12,18 +12,6 @@ const ProductVariantModel = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    color: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    ram: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    storage: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
     price: {
       type: DataTypes.DECIMAL(15, 2),
       allowNull: false,

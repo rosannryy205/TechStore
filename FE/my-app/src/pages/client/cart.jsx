@@ -5,8 +5,8 @@ import {
   useState,
 } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/authContext";
-import Loading from "../components/loading";
+import { useAuth } from "../../contexts/authContext";
+import Loading from "../../components/loading";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";

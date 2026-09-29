@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlusIcon, PhotoIcon, XMarkIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import Notification from "../../../components/notification";
 
 export default function AddProduct() {
+  const navigate = useNavigate();
 
   // Form states
   const [productData, setProductData] = useState({
@@ -13,15 +17,57 @@ export default function AddProduct() {
     description: "",
   });
 
-  const [variants, setVariants] = useState([{ ram: "", storage: "", color: "" }]);
+  const [variants, setVariants] = useState([{}]); // Dynamic attribute keys
   const [images, setImages] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [variantAttributes, setVariantAttributes] = useState([]); // Dynamic attributes from API
+  
+  const [notification, setNotification] = useState({
+    isOpen: false,
+    message: "",
+    type: "success",
+  });
+
+  const showNotification = (message, type = "success") => {
+    setNotification({ isOpen: true, message, type });
+  };
+
+  const closeNotification = () => {
+    setNotification((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [catRes, brandRes, attrRes] = await Promise.all([
+          axios.get("http://localhost:3000/api/categories"),
+          axios.get("http://localhost:3000/api/admin/brands"),
+          axios.get("http://localhost:3000/api/admin/variant-attributes"),
+        ]);
+        
+        if (catRes.data?.success && catRes.data?.data) {
+          setCategories(catRes.data.data);
+        }
+        if (brandRes.data?.success && brandRes.data?.data) {
+          setBrands(brandRes.data.data);
+        }
+        if (attrRes.data?.success && attrRes.data?.data) {
+          setVariantAttributes(attrRes.data.data);
+        }
+      } catch (error) {
+        console.error("Lỗi khi fetch data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setProductData({ ...productData, [name]: value });
   };
 
-  const handleAddVariant = () => setVariants([...variants, { ram: "", storage: "", color: "" }]);
+  const handleAddVariant = () => setVariants([...variants, {}]);
   
   const handleRemoveVariant = (index) => {
     setVariants(variants.filter((_, i) => i !== index));
@@ -29,13 +75,16 @@ export default function AddProduct() {
 
   const handleVariantChange = (index, field, value) => {
     const newVariants = [...variants];
-    newVariants[index][field] = value;
+    newVariants[index] = { ...newVariants[index], [field]: value };
     setVariants(newVariants);
   };
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map((f) => URL.createObjectURL(f));
+    const newImages = files.map((f) => ({
+      url: URL.createObjectURL(f),
+      file: f
+    }));
     setImages((prev) => [...prev, ...newImages]);
   };
 
@@ -43,14 +92,104 @@ export default function AddProduct() {
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting:", { ...productData, variants, images });
-    // TODO: Add API integration
+    try {
+      const formData = new FormData();
+      formData.append("name", productData.name);
+      formData.append("category_id", productData.category);
+      formData.append("brand_id", productData.brand);
+      formData.append("description", productData.description);
+      formData.append("status", 1);
+
+      const variantsPayload = variants.map((v) => {
+        // Build SKU from attribute values
+        const attrValues = variantAttributes
+          .map((attr) => v[attr.name] || "")
+          .filter(Boolean)
+          .join("-");
+        const sku = `${productData.name.replace(/\s+/g, "-").toUpperCase()}-${attrValues}`.replace(/[^A-Z0-9-]/g, "");
+
+        // Build attributes array for backend
+        const attributes = variantAttributes
+          .filter((attr) => v[attr.name])
+          .map((attr) => ({
+            attribute_id: attr.id,
+            value: v[attr.name],
+          }));
+
+        return {
+          sku,
+          price: productData.price,
+          sale_price: productData.salePrice || productData.price,
+          stock: 100,
+          status: 1,
+          attributes,
+        };
+      });
+
+      formData.append("variants", JSON.stringify(variantsPayload));
+
+      images.forEach((img) => {
+        formData.append("images", img.file);
+      });
+
+      const response = await axios.post("http://localhost:3000/api/admin/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      if (response.data) {
+        navigate("/admin/products", { state: { message: "Thêm sản phẩm thành công", type: "success" } });
+      }
+    } catch (error) {
+      console.error(error);
+      const errorMsg = error.response?.data?.message || "Thêm sản phẩm thất bại";
+      showNotification(errorMsg, "error");
+    }
+  };
+
+  /**
+   * Render dynamic attribute field based on attribute type.
+   * - "select": renders <select> with predefined options from API
+   * - "text": renders <input type="text">
+   */
+  const renderAttributeField = (attr, variant, variantIndex) => {
+    if (attr.type === "select" && attr.options?.length > 0) {
+      return (
+        <select
+          value={variant[attr.name] || ""}
+          onChange={(e) => handleVariantChange(variantIndex, attr.name, e.target.value)}
+          className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
+        >
+          <option value="">Chọn {attr.display_name}</option>
+          {attr.options.map((opt) => (
+            <option key={opt.id} value={opt.value}>
+              {opt.value}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    return (
+      <input
+        type="text"
+        value={variant[attr.name] || ""}
+        onChange={(e) => handleVariantChange(variantIndex, attr.name, e.target.value)}
+        placeholder={`e.g. ${attr.display_name}`}
+        className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
+      />
+    );
   };
 
   return (
     <div className="p-4 md:p-6 lg:p-8 bg-[#f5f5f7]">
+      <Notification
+        isOpen={notification.isOpen}
+        message={notification.message}
+        type={notification.type}
+        onClose={closeNotification}
+      />
       <div className="mx-auto max-w-5xl">
             {/* Page Header */}
             <div className="mb-8">
@@ -112,10 +251,9 @@ export default function AddProduct() {
                       required
                     >
                       <option value="">Select Category</option>
-                      <option value="smartphones">Smartphones</option>
-                      <option value="laptops">Laptops</option>
-                      <option value="tablets">Tablets</option>
-                      <option value="accessories">Accessories</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -133,17 +271,16 @@ export default function AddProduct() {
                       required
                     >
                       <option value="">Select Brand</option>
-                      <option value="apple">Apple</option>
-                      <option value="samsung">Samsung</option>
-                      <option value="xiaomi">Xiaomi</option>
-                      <option value="oppo">Oppo</option>
+                      {brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>{brand.name}</option>
+                      ))}
                     </select>
                   </div>
 
                   {/* Price */}
                   <div>
                     <label htmlFor="price" className="mb-2 block text-sm font-medium text-gray-700">
-                      Regular Price ($)
+                      Regular Price (VND)
                     </label>
                     <input
                       type="number"
@@ -151,9 +288,8 @@ export default function AddProduct() {
                       name="price"
                       value={productData.price}
                       onChange={handleInputChange}
-                      placeholder="0.00"
+                      placeholder="0"
                       min="0"
-                      step="0.01"
                       className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
                       required
                     />
@@ -162,7 +298,7 @@ export default function AddProduct() {
                   {/* Sale Price */}
                   <div>
                     <label htmlFor="salePrice" className="mb-2 block text-sm font-medium text-gray-700">
-                      Sale Price ($) (Optional)
+                      Sale Price (VND) (Optional)
                     </label>
                     <input
                       type="number"
@@ -170,9 +306,8 @@ export default function AddProduct() {
                       name="salePrice"
                       value={productData.salePrice}
                       onChange={handleInputChange}
-                      placeholder="0.00"
+                      placeholder="0"
                       min="0"
-                      step="0.01"
                       className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
                     />
                   </div>
@@ -226,50 +361,22 @@ export default function AddProduct() {
                         </button>
                       )}
 
-                      {/* RAM */}
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-600">RAM</label>
-                        <select
-                          value={variant.ram}
-                          onChange={(e) => handleVariantChange(index, "ram", e.target.value)}
-                          className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
-                        >
-                          <option value="">Select RAM</option>
-                          <option value="4GB">4GB</option>
-                          <option value="8GB">8GB</option>
-                          <option value="12GB">12GB</option>
-                          <option value="16GB">16GB</option>
-                        </select>
-                      </div>
+                      {/* Dynamic attribute fields from API */}
+                      {variantAttributes.map((attr) => (
+                        <div key={attr.id}>
+                          <label className="mb-1.5 block text-xs font-medium text-gray-600">
+                            {attr.display_name}
+                          </label>
+                          {renderAttributeField(attr, variant, index)}
+                        </div>
+                      ))}
 
-                      {/* Storage */}
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-600">Storage</label>
-                        <select
-                          value={variant.storage}
-                          onChange={(e) => handleVariantChange(index, "storage", e.target.value)}
-                          className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
-                        >
-                          <option value="">Select Storage</option>
-                          <option value="64GB">64GB</option>
-                          <option value="128GB">128GB</option>
-                          <option value="256GB">256GB</option>
-                          <option value="512GB">512GB</option>
-                          <option value="1TB">1TB</option>
-                        </select>
-                      </div>
-
-                      {/* Color */}
-                      <div>
-                        <label className="mb-1.5 block text-xs font-medium text-gray-600">Color</label>
-                        <input
-                          type="text"
-                          value={variant.color}
-                          onChange={(e) => handleVariantChange(index, "color", e.target.value)}
-                          placeholder="e.g. Space Black"
-                          className="block w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
-                        />
-                      </div>
+                      {/* Fallback: if no attributes loaded yet */}
+                      {variantAttributes.length === 0 && (
+                        <div className="col-span-3 text-center text-sm text-gray-400">
+                          Đang tải thuộc tính biến thể...
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -307,9 +414,9 @@ export default function AddProduct() {
                 {/* Image Previews */}
                 {images.length > 0 && (
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                    {images.map((src, index) => (
+                    {images.map((img, index) => (
                       <div key={index} className="group relative aspect-square overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-                        <img src={src} alt={`Preview ${index}`} className="h-full w-full object-cover" />
+                        <img src={img.url} alt={`Preview ${index}`} className="h-full w-full object-cover" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
                           <button
                             type="button"
@@ -329,6 +436,7 @@ export default function AddProduct() {
               <div className="flex flex-col-reverse justify-end gap-3 pt-4 sm:flex-row">
                 <button
                   type="button"
+                  onClick={() => navigate("/admin/products")}
                   className="rounded-full px-6 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 focus:ring-offset-2"
                 >
                   Cancel
