@@ -134,9 +134,7 @@ export default function AddProduct() {
         formData.append("images", img.file);
       });
 
-      const response = await axios.post("http://localhost:3000/api/admin/products", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      const response = await axios.post("http://localhost:3000/api/admin/products", formData);
 
       if (response.data) {
         navigate("/admin/products", { state: { message: "Thêm sản phẩm thành công", type: "success" } });
@@ -325,6 +323,7 @@ export default function AddProduct() {
                       rows="4"
                       placeholder="Enter product description here..."
                       className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 transition-colors focus:border-[#0066cc] focus:outline-none focus:ring-1 focus:ring-[#0066cc]"
+                      required
                     ></textarea>
                   </div>
                 </div>

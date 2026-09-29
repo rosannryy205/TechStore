@@ -2,7 +2,7 @@ const productService = require("../../services/admin/productServive");
 
 const createProduct = async (req, res, next) => {
   try {
-    const data = req.body;
+    const data = req.body; console.log('BODY IS:', req.body);
     const files = req.files;
     const newProduct = await productService.createProduct(data, files);
     return res.status(201).json({
