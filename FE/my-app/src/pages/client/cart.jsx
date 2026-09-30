@@ -82,9 +82,13 @@ export default function Cart() {
             .join(" • "),
           price: effectivePrice,
           quantity: Number(it.quantity ?? 1),
-          // FE hiện chưa có endpoint lấy image theo variant,
-          // nên dùng ảnh placeholder
-          image: "/src/assets/product.jpg",
+          // Cố gắng lấy ảnh từ product hoặc variant
+          image:
+            variant.img_url ||
+            variant.image_url ||
+            product.images?.[0]?.img_url ||
+            product.images?.[0]?.image_url ||
+            "/src/assets/product.jpg",
         };
       });
 
@@ -262,7 +266,15 @@ export default function Cart() {
                 >
                   <div className="w-48 h-48 shrink-0">
                     <img
-                      src={item.image}
+                      src={
+                        item.image?.startsWith("http") || item.image?.startsWith("data:")
+                          ? item.image
+                          : item.image?.includes("uploads/")
+                            ? `http://localhost:3000/${item.image.replace(/^\//, "")}`
+                            : item.image
+                              ? `http://localhost:3000/uploads/products/${item.image}`
+                              : "/src/assets/product.jpg"
+                      }
                       alt={item.name}
                       className="w-full h-full object-contain mix-blend-multiply"
                     />

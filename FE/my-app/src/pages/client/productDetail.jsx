@@ -491,7 +491,15 @@ export default function Product_detail() {
               <div className="relative">
                 <div className="h-[52svh] min-h-105 max-h-160 overflow-hidden">
                   <img
-                    src={`../src/assets/${mainImage}`}
+                    src={
+                      mainImage?.startsWith("http") || mainImage?.startsWith("data:")
+                        ? mainImage
+                        : mainImage?.includes("uploads/")
+                          ? `http://localhost:3000/${mainImage.replace(/^\//, "")}`
+                          : mainImage
+                            ? `http://localhost:3000/uploads/products/${mainImage}`
+                            : "/src/assets/product.jpg"
+                    }
                     alt={mapped.name}
                     className="w-full h-full object-contain"
                     style={{ filter: "saturate(1.02)" }}
@@ -727,7 +735,15 @@ export default function Product_detail() {
                 >
                   <div className="w-full">
                     <img
-                      src={`../src/assets/${p.image}`}
+                      src={
+                        p.image?.startsWith("http") || p.image?.startsWith("data:")
+                          ? p.image
+                          : p.image?.includes("uploads/")
+                            ? `http://localhost:3000/${p.image.replace(/^\//, "")}`
+                            : p.image
+                              ? `http://localhost:3000/uploads/products/${p.image}`
+                              : "/src/assets/product.jpg"
+                      }
                       alt={p.name}
                       className="w-full h-55 sm:h-65 lg:h-70 object-cover transition-transform duration-300 ease-out group-hover:scale-[1.03]"
                       style={{

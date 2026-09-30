@@ -4,6 +4,7 @@ const {
   CartItem,
   ProductVariant,
   Product,
+  ProductImage,
   VariantAttributeValue,
   VariantAttribute,
 } = require("../../models");
@@ -105,6 +106,14 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
               as: "product",
               attributes: ["name", "id"],
               required: false,
+              include: [
+                {
+                  model: ProductImage,
+                  as: "images",
+                  attributes: ["img_url", "variant_id"],
+                  required: false,
+                }
+              ]
             },
           ],
         },
@@ -124,6 +133,7 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
         // Contract cho FE: FE cần `variant.product_id` khi map.
         // Đồng thời giữ `variant_id` ở cấp item.
         variant_id: it.product_variant_id,
+        product: plain.variant?.product || {},
       };
     });
 
@@ -179,6 +189,14 @@ async function getCartByUser(userId) {
             as: "product",
             attributes: ["name", "id"],
             required: false,
+            include: [
+              {
+                model: ProductImage,
+                as: "images",
+                attributes: ["img_url", "variant_id"],
+                required: false,
+              }
+            ]
           },
         ],
       },
@@ -194,6 +212,7 @@ async function getCartByUser(userId) {
     return {
       ...plain,
       variant_id: it.product_variant_id,
+      product: plain.variant?.product || {},
     };
   });
 

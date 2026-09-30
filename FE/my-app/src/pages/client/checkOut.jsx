@@ -347,7 +347,15 @@ export default function Check_out() {
                   <div key={item.id} className="flex gap-4 items-center">
                     <div className="w-16 h-16 shrink-0 bg-[#ffffff] rounded-lg flex items-center justify-center p-2 border border-[#e0e0e0]">
                       <img
-                        src={item.image}
+                        src={
+                          item.image?.startsWith("http") || item.image?.startsWith("data:")
+                            ? item.image
+                            : item.image?.includes("uploads/")
+                              ? `http://localhost:3000/${item.image.replace(/^\//, "")}`
+                              : item.image
+                                ? `http://localhost:3000/uploads/products/${item.image}`
+                                : "/src/assets/product.jpg"
+                        }
                         alt={item.name}
                         className="w-full h-full object-contain mix-blend-multiply"
                       />
