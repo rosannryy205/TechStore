@@ -1,0 +1,23 @@
+$kind: http-request
+name: 'Create Brand - Missing Name'
+order: 2000
+method: POST
+url: 'http://localhost:3000/api/admin/brands'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 400", function () {
+        pm.response.to.have.status(400);
+      });
+      pm.test("Response has success: false", function () {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.false;
+      });

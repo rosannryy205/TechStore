@@ -1,0 +1,27 @@
+$kind: http-request
+name: 'Get Product By ID - Valid'
+order: 5000
+method: GET
+url: 'http://localhost:3000/api/products/1'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 404", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+      if (pm.response.code === 200) {
+        pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+        });
+        pm.test("Product has id field", function () {
+          const json = pm.response.json();
+          const product = json.data || json.product || json;
+          pm.expect(product).to.have.property("id");
+        });
+        pm.test("Product has name field", function () {
+          const json = pm.response.json();
+          const product = json.data || json.product || json;
+          pm.expect(product).to.have.property("name");
+        });
+      }

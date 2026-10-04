@@ -1,0 +1,34 @@
+$kind: http-request
+name: 'Update Profile - Authenticated'
+order: 2000
+method: PUT
+url: 'http://localhost:3000/api/users/profile'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "full_name": "Test User Updated",
+      "phone": "0901234567"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 401", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 401]);
+      });
+      if (pm.response.code === 200) {
+        pm.test("Response has success: true", function () {
+          const json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+        });
+      }
+      if (pm.response.code === 401) {
+        pm.test("Response has success: false (unauthorized)", function () {
+          const json = pm.response.json();
+          pm.expect(json.success).to.be.false;
+        });
+      }

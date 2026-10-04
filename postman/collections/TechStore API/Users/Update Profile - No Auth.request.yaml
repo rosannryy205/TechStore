@@ -1,0 +1,25 @@
+$kind: http-request
+name: 'Update Profile - No Auth'
+order: 3000
+method: PUT
+url: 'http://localhost:3000/api/users/profile'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "full_name": "Hacker"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });
+      pm.test("Response has success: false", function () {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.false;
+      });

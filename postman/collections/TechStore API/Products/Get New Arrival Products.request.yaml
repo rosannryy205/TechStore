@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Get New Arrival Products'
+order: 4000
+method: GET
+url: 'http://localhost:3000/api/products/newarrival'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });

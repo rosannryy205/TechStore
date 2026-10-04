@@ -1,0 +1,22 @@
+$kind: http-request
+name: 'Update Cart Item - No Auth'
+order: 6000
+method: PUT
+url: 'http://localhost:3000/api/cart/items'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "variantId": 1,
+      "quantity": 3
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });

@@ -1,0 +1,21 @@
+$kind: http-request
+name: 'Update Review Status - Invalid Status'
+order: 8000
+method: PUT
+url: 'http://localhost:3000/api/reviews/1/status'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "invalid_status"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 400 or 401 or 403", function () {
+        pm.expect(pm.response.code).to.be.oneOf([400, 401, 403]);
+      });

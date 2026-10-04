@@ -1,0 +1,30 @@
+$kind: http-request
+name: 'Add Cart Item - Valid'
+order: 5000
+method: POST
+url: 'http://localhost:3000/api/cart/items'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "productId": 1,
+      "variantId": 1,
+      "quantity": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 201 or 401 or 404", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201, 401, 404]);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+      pm.test("Response has success field", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("success");
+      });

@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Delete Attribute - Not Found'
+order: 4000
+method: DELETE
+url: 'http://localhost:3000/api/admin/variant-attributes/999999'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 404 or 400", function () {
+        pm.expect(pm.response.code).to.be.oneOf([404, 400]);
+      });

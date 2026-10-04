@@ -1,0 +1,21 @@
+$kind: http-request
+name: 'Update Option - Not Found'
+order: 6000
+method: PUT
+url: 'http://localhost:3000/api/admin/variant-attributes/999999/options/999999'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "value": "Updated Option"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 404 or 400", function () {
+        pm.expect(pm.response.code).to.be.oneOf([404, 400]);
+      });

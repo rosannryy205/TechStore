@@ -1,0 +1,24 @@
+$kind: http-request
+name: 'Create Order - No Auth'
+order: 3000
+method: POST
+url: 'http://localhost:3000/api/orders'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "receiver_name": "Test User",
+      "receiver_phone": "0901234567",
+      "address": "123 Test Street",
+      "payment_method": "cod"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });

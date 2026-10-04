@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Like Review - No Auth'
+order: 5000
+method: POST
+url: 'http://localhost:3000/api/reviews/1/like'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });

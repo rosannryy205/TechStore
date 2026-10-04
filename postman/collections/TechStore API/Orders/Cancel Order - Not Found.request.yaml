@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Cancel Order - Not Found'
+order: 6000
+method: PUT
+url: 'http://localhost:3000/api/orders/999999/cancel'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401 or 404", function () {
+        pm.expect(pm.response.code).to.be.oneOf([401, 404]);
+      });

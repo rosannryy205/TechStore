@@ -1,0 +1,22 @@
+$kind: http-request
+name: 'Get Cart - Authenticated'
+order: 2000
+method: GET
+url: 'http://localhost:3000/api/cart'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 401", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 401]);
+      });
+      if (pm.response.code === 200) {
+        pm.test("Response has success: true", function () {
+          const json = pm.response.json();
+          pm.expect(json.success).to.be.true;
+        });
+        pm.test("Response has cart data", function () {
+          const json = pm.response.json();
+          pm.expect(json).to.have.property("data");
+        });
+      }

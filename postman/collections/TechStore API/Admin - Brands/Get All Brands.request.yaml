@@ -1,0 +1,23 @@
+$kind: http-request
+name: 'Get All Brands'
+order: 1000
+method: GET
+url: 'http://localhost:3000/api/admin/brands'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+      pm.test("Response time < 2000ms", function () {
+        pm.expect(pm.response.responseTime).to.be.below(2000);
+      });
+      const json = pm.response.json();
+      const brands = json.data || json.brands || (Array.isArray(json) ? json : null);
+      if (brands && brands.length > 0) {
+        pm.collectionVariables.set("brand_id", brands[0].id);
+      }

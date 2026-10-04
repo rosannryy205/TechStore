@@ -1,0 +1,23 @@
+$kind: http-request
+name: 'Get All Attributes'
+order: 1000
+method: GET
+url: 'http://localhost:3000/api/admin/variant-attributes'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+      const json = pm.response.json();
+      const attrs = json.data || json.attributes || (Array.isArray(json) ? json : null);
+      if (attrs && attrs.length > 0) {
+        pm.collectionVariables.set("attribute_id", attrs[0].id);
+        if (attrs[0].options && attrs[0].options.length > 0) {
+          pm.collectionVariables.set("option_id", attrs[0].options[0].id);
+        }
+      }

@@ -1,0 +1,37 @@
+$kind: http-request
+name: 'Create Review - Valid'
+order: 4000
+method: POST
+url: 'http://localhost:3000/api/reviews'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "productId": 1,
+      "rating": 5,
+      "content": "Great product! Highly recommended."
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 201 or 401 or 400", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 201, 401, 400]);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+      pm.test("Response has success field", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("success");
+      });
+      if (pm.response.code === 200 || pm.response.code === 201) {
+        const json = pm.response.json();
+        const review = json.data || json.review || json;
+        if (review && review.id) {
+          pm.collectionVariables.set("review_id", review.id);
+        }
+      }

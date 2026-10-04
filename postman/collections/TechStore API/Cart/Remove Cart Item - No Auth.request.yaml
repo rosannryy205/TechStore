@@ -1,0 +1,21 @@
+$kind: http-request
+name: 'Remove Cart Item - No Auth'
+order: 7000
+method: DELETE
+url: 'http://localhost:3000/api/cart/items'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "variantId": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });

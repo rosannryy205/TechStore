@@ -1,0 +1,32 @@
+$kind: http-request
+name: 'Get All Products'
+order: 1000
+method: GET
+url: 'http://localhost:3000/api/products'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response time < 3000ms", function () {
+        pm.expect(pm.response.responseTime).to.be.below(3000);
+      });
+      pm.test("Response is JSON", function () {
+        pm.response.to.be.json;
+      });
+      pm.test("Response has data array or products", function () {
+        const json = pm.response.json();
+        const hasData = json.data || json.products || Array.isArray(json);
+        pm.expect(hasData).to.be.ok;
+      });
+      // Save first product id for later tests
+      const json = pm.response.json();
+      const products = json.data || json.products || (Array.isArray(json) ? json : null);
+      if (products && products.length > 0) {
+        pm.collectionVariables.set("product_id", products[0].id);
+        if (products[0].variants && products[0].variants.length > 0) {
+          pm.collectionVariables.set("variant_id", products[0].variants[0].id);
+        }
+      }

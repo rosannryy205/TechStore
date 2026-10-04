@@ -1,0 +1,17 @@
+$kind: http-request
+name: 'Get Related Products'
+order: 7000
+method: GET
+url: 'http://localhost:3000/api/products/1/related'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 404", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 404]);
+      });
+      if (pm.response.code === 200) {
+        pm.test("Response is JSON", function () {
+          pm.response.to.be.json;
+        });
+      }

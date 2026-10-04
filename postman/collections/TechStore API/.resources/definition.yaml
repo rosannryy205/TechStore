@@ -1,0 +1,15 @@
+$kind: collection
+description: Complete API test collection for TechStore e-commerce backend
+variables:
+  auth_cookie: ""
+  auth_token: ""
+  user_id: ""
+  user_role: ""
+  product_id: ""
+  variant_id: ""
+  category_id: ""
+  order_id: ""
+  review_id: ""
+  brand_id: ""
+  attribute_id: ""
+  option_id: ""

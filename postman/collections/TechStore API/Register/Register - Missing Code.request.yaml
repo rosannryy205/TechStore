@@ -1,0 +1,30 @@
+$kind: http-request
+name: 'Register - Missing Code'
+order: 3000
+method: POST
+url: 'http://localhost:3000/api/register'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "newuser@example.com",
+      "password": "password123"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 400", function () {
+        pm.response.to.have.status(400);
+      });
+      pm.test("Response has success: false", function () {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.false;
+      });
+      pm.test("Error message mentions code", function () {
+        const json = pm.response.json();
+        pm.expect(json.message).to.be.a("string");
+      });

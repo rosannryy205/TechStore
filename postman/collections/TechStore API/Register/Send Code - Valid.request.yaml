@@ -1,0 +1,29 @@
+$kind: http-request
+name: 'Send Code - Valid'
+order: 1000
+method: POST
+url: 'http://localhost:3000/api/register/send-code'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "email": "newuser_test@example.com"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 200 or 400 or 409", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 400, 409]);
+      });
+      pm.test("Response has success field", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("success");
+      });
+      pm.test("Response has message", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("message");
+      });

@@ -1,0 +1,23 @@
+$kind: http-request
+name: 'Create Review - No Auth'
+order: 3000
+method: POST
+url: 'http://localhost:3000/api/reviews'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "productId": 1,
+      "rating": 5,
+      "content": "Great product!"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });

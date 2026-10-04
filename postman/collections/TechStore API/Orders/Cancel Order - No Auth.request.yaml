@@ -1,0 +1,12 @@
+$kind: http-request
+name: 'Cancel Order - No Auth'
+order: 5000
+method: PUT
+url: 'http://localhost:3000/api/orders/1/cancel'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status code is 401", function () {
+        pm.response.to.have.status(401);
+      });
