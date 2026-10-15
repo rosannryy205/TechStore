@@ -18,6 +18,7 @@ import InventoryManagement from "./pages/admin/products/inventoryManagement";
 import AddProduct from "./pages/admin/products/addProduct";
 import CategoryManagement from "./pages/admin/categories/categoryManagement";
 import BrandManagement from "./pages/admin/brands/brandManagement";
+import AttributeManagement from "./pages/admin/attribute/attributeManagement";
 import NotFound from "./pages/client/404";
 /**
  * RequireAdmin — guard bảo vệ route admin.
@@ -78,6 +79,7 @@ function App() {
               <Route path="product/add-product" element={<AddProduct/>} />
               <Route path="products/categories" element={<CategoryManagement />} />
               <Route path="products/brands" element={<BrandManagement />} />
+              <Route path="products/attributes" element={<AttributeManagement />} />
               {/* Catch-all: hiển thị trang NotFound cho
                   mọi link admin chưa build body */}
               <Route path="*" element={<NotFound />} />

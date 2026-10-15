@@ -56,9 +56,9 @@ const createProduct = async (data, files) => {
         {
           product_id: product.id,
           sku: variant.sku,
-          price: variant.price,
-          sale_price: variant.sale_price,
-          stock: variant.stock || 0,
+          price: parseFloat(variant.price) || 0,
+          sale_price: parseFloat(variant.sale_price) || parseFloat(variant.price) || 0,
+          stock: parseInt(variant.stock, 10) || 0,
           status: variant.status || 1,
           sold_count: 0,
         },

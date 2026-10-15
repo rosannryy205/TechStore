@@ -80,63 +80,70 @@ export default function Product_detail() {
   const [relatedError, setRelatedError] = useState(null);
 
   // State biến thể người dùng chọn.
-  // Mặc định chọn biến thể đầu tiên (sẽ được sync sau khi fetch xong).
-  const [selected, setSelected] = useState({
-    color: null,
-    ram: null,
-    storage: null,
-  });
+  const [selected, setSelected] = useState({});
 
   // Chuẩn hóa danh sách variants từ BE.
-  // BE trả: product.variants là mảng các variant.
   const productVariants = useMemo(() => product?.variants ?? [], [product]);
+
+  // Khởi tạo trạng thái selected với variant đầu tiên nếu chưa có
+  useEffect(() => {
+    if (productVariants.length > 0 && Object.keys(selected).length === 0) {
+      const firstVariant = productVariants[0];
+      const initialSelected = {};
+      if (firstVariant.attributeValues) {
+        firstVariant.attributeValues.forEach((av) => {
+          if (av.attribute?.name) {
+            initialSelected[av.attribute.name] = av.value;
+          }
+        });
+      }
+      setSelected(initialSelected);
+    }
+  }, [productVariants]);
 
   // Lọc các tùy chọn để render (không hard-code).
   const variantOptions = useMemo(() => {
-    const colors = new Map();
-    const rams = new Map();
-    const storages = new Map();
+    const attributeMap = new Map();
 
     for (const v of productVariants) {
-      if (v?.color && !colors.has(v.color)) colors.set(v.color, v.color);
-      if (v?.ram && !rams.has(v.ram)) rams.set(v.ram, v.ram);
-      if (v?.storage && !storages.has(v.storage))
-        storages.set(v.storage, v.storage);
+      if (v?.attributeValues) {
+        for (const av of v.attributeValues) {
+          const attrKey = av.attribute?.name;
+          const attrLabel = av.attribute?.display_name || attrKey;
+          if (!attrKey) continue;
+
+          if (!attributeMap.has(attrKey)) {
+            attributeMap.set(attrKey, { label: attrLabel, options: new Map() });
+          }
+          const attrData = attributeMap.get(attrKey);
+          if (!attrData.options.has(av.value)) {
+            attrData.options.set(av.value, av.value);
+          }
+        }
+      }
     }
 
-    return {
-      colors: Array.from(colors).map((c) => ({ id: c[0], label: c[1] })),
-      rams: Array.from(rams).map((r) => ({ id: r[0], label: r[1] })),
-      storages: Array.from(storages).map((s) => ({ id: s[0], label: s[1] })),
-    };
+    return Array.from(attributeMap.entries()).map(([key, data]) => ({
+      key,
+      label: data.label,
+      options: Array.from(data.options.values()).map((val) => ({ id: val, label: val })),
+    }));
   }, [productVariants]);
 
-  // Chọn variant phù hợp theo (color, ram, storage).
-  // Nếu chưa có selected hoặc không match được thì fallback variant đầu tiên.
+  // Chọn variant phù hợp theo các thuộc tính đã chọn.
   const selectedVariant = useMemo(() => {
     if (!productVariants.length) return null;
 
-    const found = productVariants.find(
-      (v) =>
-        v.color === selected.color &&
-        v.ram === selected.ram &&
-        v.storage === selected.storage,
-    );
+    const found = productVariants.find((v) => {
+      // Đảm bảo tất cả các key đã chọn đều khớp với variant
+      for (const [key, value] of Object.entries(selected)) {
+        if (v[key] !== value) return false;
+      }
+      return true;
+    });
 
-    return found ?? productVariants[0];
-  }, [productVariants, selected.color, selected.ram, selected.storage]);
-
-  // Giá trị đã "chốt" theo variant khả dụng (dựa trên selectedVariant).
-  // Không dùng effect để setState => tránh cascading render.
-  // Các OptionGroup hiển thị dựa trên giá trị này thay vì selected thô.
-  const effectiveSelected = useMemo(
-    () => ({
-      color: selectedVariant?.color ?? null,
-      ram: selectedVariant?.ram ?? null,
-      storage: selectedVariant?.storage ?? null,
-    }),
-    [selectedVariant],
-  );
+    return found ?? null;
+  }, [productVariants, selected]);
 
   // Fetch product theo id từ FE -> BE.
   useEffect(() => {
@@ -553,51 +560,36 @@ export default function Product_detail() {
 
                 {/* Biến thể: render option lấy từ API để dễ mở rộng */}
                 <div className="mt-8">
-                  <OptionGroup
-                    label="Màu"
-                    name="Màu"
-                    items={variantOptions.colors}
-                    selectedId={effectiveSelected.color}
-                    onSelect={(id) => {
-                      // Khi đổi màu, cố gắng giữ ram/storage nếu variant tương ứng tồn tại.
-                      setSelected((s) => ({ ...s, color: id }));
-                    }}
-                  />
-
-                  <div className="mt-6">
-                    <OptionGroup
-                      label="RAM"
-                      name="RAM"
-                      items={variantOptions.rams}
-                      selectedId={effectiveSelected.ram}
-                      onSelect={(id) => {
-                        setSelected((s) => ({ ...s, ram: id }));
-                      }}
-                    />
-                  </div>
-
-                  <div className="mt-6">
-                    <OptionGroup
-                      label="Bộ nhớ"
-                      name="Bộ nhớ"
-                      items={variantOptions.storages}
-                      selectedId={effectiveSelected.storage}
-                      onSelect={(id) => {
-                        setSelected((s) => ({ ...s, storage: id }));
-                      }}
-                    />
-                  </div>
+                  {variantOptions.map((attr, idx) => (
+                    <div key={attr.key} className={idx > 0 ? "mt-6" : ""}>
+                      <OptionGroup
+                        label={attr.label}
+                        name={attr.label}
+                        items={attr.options}
+                        selectedId={selected[attr.key]}
+                        onSelect={(id) => {
+                          setSelected((s) => ({ ...s, [attr.key]: id }));
+                        }}
+                      />
+                    </div>
+                  ))}
 
                   {/* Thông tin stock/sản phẩm theo variant được chọn (nếu backend có stock). */}
                   <div className="mt-4 text-[14px] text-[#1d1d1f]">
-                    {typeof selectedVariant?.stock === "number" ? (
+                    {selectedVariant && typeof selectedVariant.stock === "number" ? (
                       <span className="text-[#7a7a7a]">
                         Còn lại:{" "}
                         <b className="text-[#1d1d1f]">
                           {selectedVariant.stock}
                         </b>
                       </span>
-                    ) : null}
+                    ) : (
+                      Object.keys(selected).length > 0 && !selectedVariant && (
+                        <span className="text-red-500 font-medium">
+                          Phiên bản này hiện không khả dụng
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
 
@@ -607,7 +599,9 @@ export default function Product_detail() {
                     ariaLabel="Thêm vào giỏ"
                     onClick={handleAddToCart}
                   >
-                    {inCart
+                    {!selectedVariant 
+                      ? "Không khả dụng"
+                      : inCart
                       ? "Đã thêm ✓"
                       : isPosting
                         ? "Đang thêm..."

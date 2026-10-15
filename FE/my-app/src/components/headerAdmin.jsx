@@ -25,6 +25,7 @@ const NAV_ITEMS = [
     children: [
       { label: "Danh sách danh mục", href: "/admin/products/categories" },
       { label: "Danh sách thương hiệu", href: "/admin/products/brands" },
+      { label: "Danh sách biến thể", href: "/admin/products/attributes" },
       { label: "Danh sách sản phẩm", href: "/admin/products" },
       { label: "Danh sách tồn kho", href: "/admin/products/inventory" },
     ],

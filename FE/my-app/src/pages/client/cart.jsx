@@ -77,9 +77,7 @@ export default function Cart() {
           id: it.variant_id,
           productId: variant.product_id,
           name: product.name ?? "Sản phẩm",
-          tagline: [variant.color, variant.ram, variant.storage]
-            .filter(Boolean)
-            .join(" • "),
+          tagline: variant.attributeValues ? variant.attributeValues.map(av => av.value).join(" ") : [variant.color, variant.ram, variant.storage].filter(Boolean).join(" � "),
           price: effectivePrice,
           quantity: Number(it.quantity ?? 1),
           // Cố gắng lấy ảnh từ product hoặc variant
