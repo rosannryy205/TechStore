@@ -12,7 +12,7 @@ import Cart from "./pages/client/cart";
 import Check_out from "./pages/client/checkOut";
 import User_profile from "./pages/client/userProfile";
 import OrderSuccess from "./pages/client/orderSuccess";
-import AdminDashboard from "./pages/admin/adminDashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import ProductManagement from "./pages/admin/products/productManagement";
 import InventoryManagement from "./pages/admin/products/inventoryManagement";
 import AddProduct from "./pages/admin/products/addProduct";
