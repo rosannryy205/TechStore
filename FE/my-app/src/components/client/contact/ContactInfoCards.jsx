@@ -4,7 +4,7 @@ import {
   MapPinIcon,
   ChatBubbleLeftRightIcon,
   BriefcaseIcon,
-} from "./ContactIcons";
+} from "./contactIcons";
 
 export default function ContactInfoCards() {
   const cards = [

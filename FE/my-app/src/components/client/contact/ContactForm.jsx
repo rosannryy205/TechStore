@@ -1,4 +1,4 @@
-import InlineAlert from "@/components/InlineAlert";
+import InlineAlert from "@/components/inlineAlert";
 import { SF_DISPLAY } from "@/constants/typography";
 
 export default function ContactForm({

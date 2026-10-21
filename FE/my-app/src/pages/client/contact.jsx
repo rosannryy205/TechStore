@@ -1,8 +1,8 @@
 import { SF_TEXT } from "@/constants/typography";
 import { useContactForm } from "@/hooks/client/useContactForm";
-import ContactHeader from "@/components/client/contact/ContactHeader";
-import ContactForm from "@/components/client/contact/ContactForm";
-import ContactInfoCards from "@/components/client/contact/ContactInfoCards";
+import ContactHeader from "@/components/client/contact/contactHeader";
+import ContactForm from "@/components/client/contact/contactForm";
+import ContactInfoCards from "@/components/client/contact/contactInfoCards";
 
 export default function Contact() {
   const {

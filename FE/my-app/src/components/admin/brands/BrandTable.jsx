@@ -1,4 +1,4 @@
-import BrandTableRow from "./BrandTableRow";
+import BrandTableRow from "./brandTableRow";
 
 export default function BrandTable({ brands = [] }) {
   return (

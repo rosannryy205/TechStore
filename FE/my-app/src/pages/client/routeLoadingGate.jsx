@@ -1,1 +1,1 @@
-export { default } from "@/components/common/RouteLoadingGate";
+export { default } from "@/components/common/routeLoadingGate";

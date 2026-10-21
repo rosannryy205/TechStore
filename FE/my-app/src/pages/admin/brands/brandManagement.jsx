@@ -1,8 +1,8 @@
 import Notification from "@/components/notification";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { useAdminBrands } from "@/hooks/admin/useAdminBrands";
-import BrandForm from "@/components/admin/brands/BrandForm";
-import BrandTable from "@/components/admin/brands/BrandTable";
+import BrandForm from "@/components/admin/brands/brandForm";
+import BrandTable from "@/components/admin/brands/brandTable";
 
 export default function BrandManagement() {
   const {

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import CommentForm from "./commentForm";
 import CommentItem from "./commentItem";
 
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "@/constants/api";
 
 // Số comment hiển thị mỗi lần load.
 const INITIAL_VISIBLE_COUNT = 5;

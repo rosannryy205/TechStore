@@ -1,6 +1,6 @@
 import { SF_DISPLAY } from "@/constants/typography";
 import { formatVnd } from "@/utils/formatCurrency";
-import ProductOptionGroup from "./ProductOptionGroup";
+import ProductOptionGroup from "./productOptionGroup";
 
 export default function ProductInfo({
   product,

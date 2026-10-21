@@ -1,6 +1,6 @@
 import Loading from "@/components/loading";
 import { SF_DISPLAY } from "@/constants/typography";
-import ProfileOrderItem from "./ProfileOrderItem";
+import ProfileOrderItem from "./profileOrderItem";
 
 export default function ProfileDashboardTab({
   user,

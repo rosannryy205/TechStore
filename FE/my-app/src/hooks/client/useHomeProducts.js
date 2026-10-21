@@ -13,16 +13,41 @@ function mapProductsForHome(products) {
 
     const productId = p.id ?? p._id;
     const tagline = p.description || p.slug || "";
+    const variants = p.variants || [];
+    const brandName = p.brand?.name || "";
+
+    // Tính toán mức giá khởi điểm từ các biến thể
+    let minPrice = null;
+    let originalPrice = null;
+    let hasSale = false;
+
+    if (variants.length > 0) {
+      for (const v of variants) {
+        const price = Number(v.price) || 0;
+        const salePrice = Number(v.sale_price) || 0;
+        const effectivePrice = salePrice > 0 && salePrice < price ? salePrice : price;
+
+        if (minPrice === null || (effectivePrice > 0 && effectivePrice < minPrice)) {
+          minPrice = effectivePrice;
+          originalPrice = price;
+          hasSale = salePrice > 0 && salePrice < price;
+        }
+      }
+    }
 
     return {
       id: productId,
       name: p.name,
       tagline,
       image,
-      href: productId
-        ? `/product_detail?id=${productId}`
-        : "/product_detail",
-      cta: "Xem chi tiết",
+      brand: brandName,
+      variants,
+      minPrice,
+      originalPrice,
+      hasSale,
+      href: productId ? `/product_detail?id=${productId}` : "/product_detail",
+      cta: "Mua ngay",
+      learnMoreHref: productId ? `/product_detail?id=${productId}` : "/product_detail",
     };
   });
 }
@@ -55,7 +80,7 @@ export function useHomeProducts() {
         }
       } catch (err) {
         if (!ignore) {
-          setError(err?.message || "Error fetching product data.");
+          setError(err?.message || "Lỗi khi tải dữ liệu sản phẩm trang chủ.");
           setNewArrivals([]);
           setFeatured([]);
           setPopular([]);

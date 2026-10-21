@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import ProductTableRow from "./ProductTableRow";
-import ProductVariantRow from "./ProductVariantRow";
+import ProductTableRow from "./productTableRow";
+import ProductVariantRow from "./productVariantRow";
 
 export default function ProductTable({
   products = [],

@@ -1,4 +1,4 @@
-import CategoryTableRow from "./CategoryTableRow";
+import CategoryTableRow from "./categoryTableRow";
 
 export default function CategoryTable({ categories = [] }) {
   return (

@@ -1,6 +1,6 @@
-import { ProductAttributesBuilder } from "./ProductAttributesBuilder";
-import { ProductBulkSettings } from "./ProductBulkSettings";
-import { ProductVariantMatrixTable } from "./ProductVariantMatrixTable";
+import { ProductAttributesBuilder } from "./productAttributesBuilder";
+import { ProductBulkSettings } from "./productBulkSettings";
+import { ProductVariantMatrixTable } from "./productVariantMatrixTable";
 
 export function ProductVariantsSection({
   variantAttributes,

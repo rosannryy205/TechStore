@@ -1,5 +1,5 @@
 import { SF_TEXT } from "@/constants/typography";
-import ProductCard from "./ProductCard";
+import ProductCard from "./productCard";
 
 export default function ProductGrid({ products = [] }) {
   if (products.length === 0) {

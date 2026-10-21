@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { useCheckout } from "@/hooks/client/useCheckout";
-import CheckoutForm from "@/components/client/checkout/CheckoutForm";
-import CheckoutOrderSummary from "@/components/client/checkout/CheckoutOrderSummary";
+import CheckoutForm from "@/components/client/checkout/checkoutForm";
+import CheckoutOrderSummary from "@/components/client/checkout/checkoutOrderSummary";
 
 export default function CheckOut() {
   const {

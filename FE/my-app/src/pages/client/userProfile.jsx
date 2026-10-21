@@ -1,8 +1,8 @@
 import ConfirmDialog from "@/components/confirmDialog";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { useUserProfile } from "@/hooks/client/useUserProfile";
-import ProfileSidebar from "@/components/client/userProfile/ProfileSidebar";
-import ProfileContent from "@/components/client/userProfile/ProfileContent";
+import ProfileSidebar from "@/components/client/userProfile/profileSidebar";
+import ProfileContent from "@/components/client/userProfile/profileContent";
 
 export default function UserProfile() {
   const p = useUserProfile();

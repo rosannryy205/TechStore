@@ -1,9 +1,9 @@
 import Loading from "@/components/loading";
 import { SF_TEXT } from "@/constants/typography";
 import { useProducts } from "@/hooks/client/useProducts";
-import ProductListHeader from "@/components/client/products/ProductListHeader";
-import ProductGrid from "@/components/client/products/ProductGrid";
-import ProductPagination from "@/components/client/products/ProductPagination";
+import ProductListHeader from "@/components/client/products/productListHeader";
+import ProductGrid from "@/components/client/products/productGrid";
+import ProductPagination from "@/components/client/products/productPagination";
 
 export default function Products() {
   const { products, pageItems, loading, error, page, totalPages, setPage } =

@@ -1,8 +1,8 @@
 import { useAdminDashboard } from "@/hooks/admin/useAdminDashboard";
-import DashboardHeader from "@/components/admin/dashboard/DashboardHeader";
-import DashboardStatsGrid from "@/components/admin/dashboard/DashboardStatsGrid";
-import DashboardChartsGrid from "@/components/admin/dashboard/DashboardChartsGrid";
-import RecentOrdersSection from "@/components/admin/dashboard/RecentOrdersSection";
+import DashboardHeader from "@/components/admin/dashboard/dashboardHeader";
+import DashboardStatsGrid from "@/components/admin/dashboard/dashboardStatsGrid";
+import DashboardChartsGrid from "@/components/admin/dashboard/dashboardChartsGrid";
+import RecentOrdersSection from "@/components/admin/dashboard/recentOrdersSection";
 
 export default function AdminDashboard() {
   const { statsData, chartData, recentOrders } = useAdminDashboard();

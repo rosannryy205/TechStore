@@ -1,9 +1,9 @@
 import Notification from "@/components/notification";
 import { useAddProduct } from "@/hooks/admin/useAddProduct";
-import { ProductBasicInfo } from "@/components/admin/products/add/ProductBasicInfo";
-import { ProductVariantsSection } from "@/components/admin/products/add/ProductVariantsSection";
-import { ProductImagesUploader } from "@/components/admin/products/add/ProductImagesUploader";
-import { ProductFormActions } from "@/components/admin/products/add/ProductFormActions";
+import { ProductBasicInfo } from "@/components/admin/products/add/productBasicInfo";
+import { ProductVariantsSection } from "@/components/admin/products/add/productVariantsSection";
+import { ProductImagesUploader } from "@/components/admin/products/add/productImagesUploader";
+import { ProductFormActions } from "@/components/admin/products/add/productFormActions";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 
 export default function AddProduct() {

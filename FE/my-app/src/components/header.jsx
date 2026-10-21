@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuthModal } from "../contexts/authModalContext";
 import { useAuth } from "../contexts/authContext";
+import { cartService } from "@/services/api/client/cartService";
+import { categoryService } from "@/services/api/client/categoryService";
 
 // Menu dữ liệu (category -> brand) sẽ được render động từ backend.
 // Vì yêu cầu "xóa bỏ hết dữ liệu tĩnh ở FE" nên không còn hardcode navItems nữa.
@@ -338,26 +340,13 @@ export default function Header() {
     }
 
     try {
-      const API_BASE_URL = "http://localhost:3000/api"; // Base URL backend
-      const res = await fetch(`${API_BASE_URL}/cart`, {
-        method: "GET",
-        credentials: "include", // gửi cookie httpOnly cho request xác thực
-      });
-
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-
-      const items = payload?.data?.items ?? [];
-      // Tổng số sản phẩm = tổng quantity của các item trong giỏ
+      const items = await cartService.getCart();
       const total = items.reduce(
         (acc, it) => acc + Number(it.quantity ?? 0),
         0,
       );
       setCartCount(total);
     } catch {
-      // Lỗi fetch (mạng, 401, 5xx...) => không hiện badge
       setCartCount(0);
     }
   }, [isAuthenticated]);
@@ -391,14 +380,8 @@ export default function Header() {
       try {
         setLoadingCategories(true); // Bật trạng thái loading trước khi fetch
 
-        const API_BASE_URL = "http://localhost:3000/api"; // Base URL backend
-        const res = await fetch(`${API_BASE_URL}/categories/`); // Gọi API lấy categories + brands
-        if (!res.ok) throw new Error(`HTTP ${res.status}`); // Nếu HTTP lỗi thì throw để vào catch
-
-        const json = await res.json(); // Parse JSON phản hồi
-        const data = json?.data ?? []; // Lấy mảng categories, fallback [] nếu BE trả thiếu
-
-        setCategories(data); // Lưu categories vào state để render menu động
+        const data = await categoryService.getCategories();
+        setCategories(data);
       } catch (err) {
         setErrorCategories(
           err?.message || "Không lấy được danh mục từ backend",

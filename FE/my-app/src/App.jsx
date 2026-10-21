@@ -7,12 +7,12 @@ import AdminLayout from "./layouts/adminLayout";
 import Home from "./pages/client/home";
 import Products from "./pages/client/products";
 import Contact from "./pages/client/contact";
-import Product_detail from "./pages/client/productDetail";
+import ProductDetail from "./pages/client/productDetail";
 import Cart from "./pages/client/cart";
-import Check_out from "./pages/client/checkOut";
-import User_profile from "./pages/client/userProfile";
+import Checkout from "./pages/client/checkOut";
+import UserProfile from "./pages/client/userProfile";
 import OrderSuccess from "./pages/client/orderSuccess";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminDashboard from "./pages/admin/adminDashboard";
 import ProductManagement from "./pages/admin/products/productManagement";
 import InventoryManagement from "./pages/admin/products/inventoryManagement";
 import AddProduct from "./pages/admin/products/addProduct";
@@ -20,6 +20,7 @@ import CategoryManagement from "./pages/admin/categories/categoryManagement";
 import BrandManagement from "./pages/admin/brands/brandManagement";
 import AttributeManagement from "./pages/admin/attribute/attributeManagement";
 import NotFound from "./pages/client/404";
+
 /**
  * RequireAdmin — guard bảo vệ route admin.
  * - loading: đang check session => hiện Loading fullscreen.
@@ -51,10 +52,10 @@ function App() {
               <Route index element={<Home />} />
               <Route path="products" element={<Products />} />
               <Route path="contact" element={<Contact />} />
-              <Route path="product_detail" element={<Product_detail />} />
+              <Route path="product_detail" element={<ProductDetail />} />
               <Route path="cart" element={<Cart />} />
-              <Route path="checkout" element={<Check_out />} />
-              <Route path="user_profile" element={<User_profile />} />
+              <Route path="checkout" element={<Checkout />} />
+              <Route path="user_profile" element={<UserProfile />} />
               <Route path="order-success" element={<OrderSuccess />} />
               
               {/* Trang 404 cho các route người dùng chưa thiết kế */}

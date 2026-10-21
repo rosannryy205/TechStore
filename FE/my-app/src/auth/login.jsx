@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useAuthModal } from "../contexts/authModalContext";
 import { useAuth } from "../contexts/authContext";
 import { useNavigate } from "react-router-dom";
-import InlineAlert from "../components/InlineAlert";
+import InlineAlert from "../components/inlineAlert";
 
 const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
 const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
 
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "@/constants/api";
 
 /**
  * Login form — rendered inside AuthModal.

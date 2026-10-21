@@ -2,9 +2,9 @@ import Loading from "@/components/loading";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { formatVnd } from "@/utils/formatCurrency";
 import { useCart } from "@/hooks/client/useCart";
-import CartItemList from "@/components/client/cart/CartItemList";
-import CartSummary from "@/components/client/cart/CartSummary";
-import EmptyCart from "@/components/client/cart/EmptyCart";
+import CartItemList from "@/components/client/cart/cartItemList";
+import CartSummary from "@/components/client/cart/cartSummary";
+import EmptyCart from "@/components/client/cart/emptyCart";
 
 export default function Cart() {
   const {

@@ -2,8 +2,8 @@ import Loading from "@/components/loading";
 import Notification from "@/components/notification";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { useAdminCategories } from "@/hooks/admin/useAdminCategories";
-import CategoryForm from "@/components/admin/categories/CategoryForm";
-import CategoryTable from "@/components/admin/categories/CategoryTable";
+import CategoryForm from "@/components/admin/categories/categoryForm";
+import CategoryTable from "@/components/admin/categories/categoryTable";
 
 export default function CategoryManagement() {
   const {

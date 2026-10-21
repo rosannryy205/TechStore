@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { SF_TEXT } from "@/constants/typography";
-import OrderSuccessBanner from "@/components/client/orderSuccess/OrderSuccessBanner";
-import OrderItemsSummary from "@/components/client/orderSuccess/OrderItemsSummary";
-import OrderCustomerInfo from "@/components/client/orderSuccess/OrderCustomerInfo";
+import OrderSuccessBanner from "@/components/client/orderSuccess/orderSuccessBanner";
+import OrderItemsSummary from "@/components/client/orderSuccess/orderItemsSummary";
+import OrderCustomerInfo from "@/components/client/orderSuccess/orderCustomerInfo";
 
 export default function OrderSuccess() {
   const location = useLocation();

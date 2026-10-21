@@ -1,7 +1,7 @@
 import { useAdminInventory } from "@/hooks/admin/useAdminInventory";
-import { InventoryHeader } from "@/components/admin/products/inventory/InventoryHeader";
-import { InventorySearchBar } from "@/components/admin/products/inventory/InventorySearchBar";
-import { InventoryTable } from "@/components/admin/products/inventory/InventoryTable";
+import { InventoryHeader } from "@/components/admin/products/inventory/inventoryHeader";
+import { InventorySearchBar } from "@/components/admin/products/inventory/inventorySearchBar";
+import { InventoryTable } from "@/components/admin/products/inventory/inventoryTable";
 
 export default function InventoryManagement() {
   const {

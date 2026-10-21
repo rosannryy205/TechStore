@@ -1,8 +1,8 @@
 import Notification from "@/components/notification";
 import { useAdminProducts } from "@/hooks/admin/useAdminProducts";
-import ProductManagementHeader from "@/components/admin/products/management/ProductManagementHeader";
-import ProductFilterBar from "@/components/admin/products/management/ProductFilterBar";
-import ProductTable from "@/components/admin/products/management/ProductTable";
+import ProductManagementHeader from "@/components/admin/products/management/productManagementHeader";
+import ProductFilterBar from "@/components/admin/products/management/productFilterBar";
+import ProductTable from "@/components/admin/products/management/productTable";
 
 export default function ProductManagement() {
   const {

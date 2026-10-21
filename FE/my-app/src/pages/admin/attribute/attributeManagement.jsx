@@ -1,8 +1,8 @@
 import Notification from "@/components/notification";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { useAdminAttributes } from "@/hooks/admin/useAdminAttributes";
-import AttributeForm from "@/components/admin/attribute/AttributeForm";
-import AttributeTable from "@/components/admin/attribute/AttributeTable";
+import AttributeForm from "@/components/admin/attribute/attributeForm";
+import AttributeTable from "@/components/admin/attribute/attributeTable";
 
 export default function AttributeManagement() {
   const {

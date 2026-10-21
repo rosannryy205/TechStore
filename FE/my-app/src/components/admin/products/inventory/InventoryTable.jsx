@@ -1,4 +1,4 @@
-import { InventoryTableRow } from "./InventoryTableRow";
+import { InventoryTableRow } from "./inventoryTableRow";
 
 export function InventoryTable({ items, loading, onUpdateStock }) {
   return (

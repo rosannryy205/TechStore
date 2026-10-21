@@ -1,4 +1,4 @@
-import AttributeTableRow from "./AttributeTableRow";
+import AttributeTableRow from "./attributeTableRow";
 
 export default function AttributeTable({ attributes = [] }) {
   return (

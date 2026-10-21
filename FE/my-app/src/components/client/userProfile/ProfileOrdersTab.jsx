@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import Loading from "@/components/loading";
 import { SF_DISPLAY } from "@/constants/typography";
-import ProfileOrderItem from "./ProfileOrderItem";
+import ProfileOrderItem from "./profileOrderItem";
 
 export default function ProfileOrdersTab({
   orders,

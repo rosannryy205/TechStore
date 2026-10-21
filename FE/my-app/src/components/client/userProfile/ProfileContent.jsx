@@ -1,6 +1,6 @@
-import ProfileDashboardTab from "./ProfileDashboardTab";
-import ProfileOrdersTab from "./ProfileOrdersTab";
-import ProfileSettingsTab from "./ProfileSettingsTab";
+import ProfileDashboardTab from "./profileDashboardTab";
+import ProfileOrdersTab from "./profileOrdersTab";
+import ProfileSettingsTab from "./profileSettingsTab";
 
 export default function ProfileContent({
   activeTab,

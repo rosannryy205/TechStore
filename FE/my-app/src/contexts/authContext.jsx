@@ -7,6 +7,7 @@ import {
   useState,
   useCallback,
 } from "react";
+import { httpRequest } from "@/services/api/httpClient";
 
 /**
  * AuthContext
@@ -16,8 +17,6 @@ import {
  * - logout(): gọi /api/auth/logout để xoá cookie
  */
 const AuthContext = createContext(null);
-
-const API_BASE_URL = "http://localhost:3000";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -31,17 +30,7 @@ export function AuthProvider({ children }) {
   const refreshMe = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
-        method: "GET",
-        credentials: "include", // gửi cookie httpOnly
-      });
-
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setUser(null);
-        return;
-      }
-
+      const payload = await httpRequest("/api/auth/me");
       setUser(payload?.data?.user ?? null);
     } catch {
       setUser(null);
@@ -52,9 +41,8 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      await httpRequest("/api/auth/logout", {
         method: "POST",
-        credentials: "include",
       });
     } finally {
       setUser(null);

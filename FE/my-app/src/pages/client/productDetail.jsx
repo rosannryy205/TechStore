@@ -3,11 +3,11 @@ import { CommentSection } from "@/components/comments";
 import { useAuth } from "@/contexts/authContext";
 import { SF_TEXT } from "@/constants/typography";
 import { useProductDetail } from "@/hooks/client/useProductDetail";
-import ProductGallery from "@/components/client/productDetail/ProductGallery";
-import ProductInfo from "@/components/client/productDetail/ProductInfo";
-import ProductActions from "@/components/client/productDetail/ProductActions";
-import ProductDescription from "@/components/client/productDetail/ProductDescription";
-import RelatedProducts from "@/components/client/productDetail/RelatedProducts";
+import ProductGallery from "@/components/client/productDetail/productGallery";
+import ProductInfo from "@/components/client/productDetail/productInfo";
+import ProductActions from "@/components/client/productDetail/productActions";
+import ProductDescription from "@/components/client/productDetail/productDescription";
+import RelatedProducts from "@/components/client/productDetail/relatedProducts";
 
 export default function ProductDetail() {
   const { user, isAuthenticated } = useAuth();

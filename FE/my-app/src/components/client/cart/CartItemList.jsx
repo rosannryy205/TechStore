@@ -1,4 +1,4 @@
-import CartItemRow from "./CartItemRow";
+import CartItemRow from "./cartItemRow";
 
 export default function CartItemList({
   items,

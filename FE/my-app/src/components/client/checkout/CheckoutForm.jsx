@@ -1,5 +1,5 @@
 import { SF_DISPLAY } from "@/constants/typography";
-import PaymentMethodSelector from "./PaymentMethodSelector";
+import PaymentMethodSelector from "./paymentMethodSelector";
 
 export default function CheckoutForm({
   formData,
