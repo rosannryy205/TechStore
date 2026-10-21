@@ -22,34 +22,29 @@ const VARIANT_INCLUDE = {
 };
 
 const getAllProducts = async (category_slug, brand_slug) => {
-  // Yêu cầu: cả 2 điều kiện phải hợp lệ (AND). Sai 1 trong 2 => loại toàn bộ => []
-  if (!category_slug) {
-    return [];
-  }
-
   try {
-    // Tìm Category theo slug
-    const category = await Category.findOne({
-      where: { slug: category_slug },
-    });
+    const whereCondition = {};
 
-    if (!category) return []; // Kiểm tra object, không phải slug
-
-    const whereCondition = {
-      category_id: category.id,
-    };
-
-    if (brand_slug) {
-      const brand = await Brand.findOne({
-        where: { slug: brand_slug }, // Tìm Brand theo slug
+    // Nếu có truyền category_slug thì lọc theo category_id
+    if (category_slug) {
+      const category = await Category.findOne({
+        where: { slug: category_slug },
       });
 
-      if (brand) {
-        whereCondition.brand_id = brand.id;
-      }
+      if (!category) return []; // Nếu slug category không tồn tại, trả về rỗng
+      whereCondition.category_id = category.id;
     }
 
-    // Dùng category.id và brand.id
+    // Nếu có truyền brand_slug thì lọc theo brand_id
+    if (brand_slug) {
+      const brand = await Brand.findOne({
+        where: { slug: brand_slug },
+      });
+
+      if (!brand) return []; // Nếu slug brand không tồn tại, trả về rỗng
+      whereCondition.brand_id = brand.id;
+    }
+
     const products = await Product.findAll({
       where: whereCondition,
       include: [
@@ -63,6 +58,7 @@ const getAllProducts = async (category_slug, brand_slug) => {
           as: "images",
         },
       ],
+      order: [["created_at", "DESC"]],
     });
 
     return transformProducts(products);

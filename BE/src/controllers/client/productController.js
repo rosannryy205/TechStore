@@ -10,12 +10,6 @@ const {
 const getAllProductsController = async (req, res, next) => {
   try {
     const { category, brand } = req.query;
-    // Yêu cầu: trả về đúng sản phẩm thỏa BOTH điều kiện (AND).
-    // Nếu sai 1 trong 2 (thiếu/không hợp lệ) => loại toàn bộ => []
-    if (!category) {
-      return res.status(200).json({ success: true, data: [] });
-    }
-
     const products = await getAllProducts(category, brand);
     return res.status(200).json({ success: true, data: products });
   } catch (error) {
