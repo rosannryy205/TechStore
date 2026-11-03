@@ -443,7 +443,12 @@ export default function HeaderAdmin() {
     if (item.href) {
       return { item, active: pathname.startsWith(item.href) };
     }
-    const activeChild = item.children.find((c) => pathname.startsWith(c.href));
+    const currentUrl = pathname + (location.search || "");
+    const activeChild = item.children.find((c) =>
+      c.href.includes("?")
+        ? currentUrl === c.href
+        : pathname === c.href || (c.href !== "/admin" && pathname.startsWith(c.href + "/"))
+    );
     return { item, active: !!activeChild, activeHref: activeChild?.href };
   });
 

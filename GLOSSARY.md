@@ -43,3 +43,11 @@ _Avoid_: Bag, Shopping basket
 **Order**:
 Đơn đặt hàng được tạo sau khi khách hàng xác nhận giỏ hàng và thông tin thanh toán, vận hành qua vòng đời trạng thái: Pending -> Confirmed -> Processing -> Shipping -> Completed (hoặc Cancelled). Khách hàng chỉ có quyền tự hủy đơn khi ở trạng thái Pending; từ Confirmed trở đi quyền chuyển đổi trạng thái thuộc về Admin hoặc Staff.
 _Avoid_: Purchase, Transaction, Checkout session
+
+**Order Item**:
+Hàng mục sản phẩm cụ thể nằm trong một Order, lưu vết cố định thông tin tại thời điểm mua gồm Variant được chọn, đơn giá chốt, số lượng và thành tiền.
+_Avoid_: Order product, Order line, Bought item
+
+**Cancellation Reason**:
+Lý do hủy đơn hàng được ghi nhận khi Order chuyển sang trạng thái Cancelled, bắt buộc phải cung cấp khi Admin hoặc Staff can thiệp hủy đơn.
+_Avoid_: Cancel note, Reason text
