@@ -51,3 +51,7 @@ _Avoid_: Order product, Order line, Bought item
 **Cancellation Reason**:
 Lý do hủy đơn hàng được ghi nhận khi Order chuyển sang trạng thái Cancelled, bắt buộc phải cung cấp khi Admin hoặc Staff can thiệp hủy đơn.
 _Avoid_: Cancel note, Reason text
+
+**Reorder**:
+Hành động tạo lại giỏ hàng (Cart) từ danh sách các Variant còn tồn kho khả dụng thuộc về một Order đã hoàn tất hoặc bị hủy.
+_Avoid_: Repurchase, Order again, Buy again
