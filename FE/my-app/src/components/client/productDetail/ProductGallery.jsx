@@ -1,4 +1,4 @@
-import { resolveProductImageUrl } from "@/utils/imageHelper";
+import { resolveProductImageUrl, handleImageError } from "@/utils/imageHelper";
 
 export default function ProductGallery({ image, productName }) {
   const imageUrl = resolveProductImageUrl(image);
@@ -12,6 +12,7 @@ export default function ProductGallery({ image, productName }) {
             alt={productName || "Sản phẩm"}
             className="w-full h-full object-contain"
             style={{ filter: "saturate(1.02)" }}
+            onError={handleImageError}
           />
         </div>
         <div

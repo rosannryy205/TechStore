@@ -1,6 +1,8 @@
 import defaultProductImage from "@/assets/product.jpg";
 import { API_BASE_URL } from "@/constants/api";
 
+export { defaultProductImage };
+
 /**
  * Phân giải đường dẫn ảnh sản phẩm / avatar bảo toàn 100% logic fallback:
  * - URL tuyệt đối (http://..., https://...) hoặc Data URL (data:...)
@@ -27,4 +29,18 @@ export function resolveProductImageUrl(image, fallback = defaultProductImage) {
   }
 
   return `${API_BASE_URL}/uploads/products/${image}`;
+}
+
+/**
+ * Xử lý sự kiện onError trên thẻ <img> để chống vỡ hình ảnh:
+ * Tự động trỏ sang ảnh fallback mặc định khi tải ảnh thất bại.
+ *
+ * @param {Event} e - React SyntheticEvent onError
+ * @param {string} fallback - Ảnh thay thế
+ */
+export function handleImageError(e, fallback = defaultProductImage) {
+  if (e?.currentTarget && e.currentTarget.src !== fallback) {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = fallback;
+  }
 }

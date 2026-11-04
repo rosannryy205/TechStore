@@ -55,3 +55,12 @@ _Avoid_: Cancel note, Reason text
 **Reorder**:
 Hành động tạo lại giỏ hàng (Cart) từ danh sách các Variant còn tồn kho khả dụng thuộc về một Order đã hoàn tất hoặc bị hủy.
 _Avoid_: Repurchase, Order again, Buy again
+
+
+**Seeder**:
+Tiện ích tự động hóa việc khởi tạo dữ liệu mẫu cho cơ sở dữ liệu (danh mục, thương hiệu, sản phẩm, biến thể, tài khoản) theo đúng ràng buộc quan hệ toàn vẹn.
+_Avoid_: Data filler, Fake script
+
+**Local Asset Bundle**:
+Tập hợp các tài nguyên hình ảnh được lưu trữ trực tiếp dưới dạng tệp vật lý trong dự án (`BE/uploads/`), đảm bảo tính tự chủ và khả năng hiển thị ổn định không phụ thuộc vào dịch vụ bên ngoài.
+_Avoid_: Online assets, CDN links
