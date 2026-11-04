@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { SF_TEXT } from "@/constants/typography";
-import { resolveProductImageUrl } from "@/utils/imageHelper";
+import { resolveProductImageUrl, handleImageError } from "@/utils/imageHelper";
 import { formatVnd } from "@/utils/formatCurrency";
 
 export default function ProductCard({ product, tone }) {
@@ -51,6 +51,7 @@ export default function ProductCard({ product, tone }) {
               filter: "drop-shadow(0px 12px 24px rgba(0, 0, 0, 0.15))",
             }}
             loading="lazy"
+            onError={handleImageError}
           />
         </Link>
       </div>

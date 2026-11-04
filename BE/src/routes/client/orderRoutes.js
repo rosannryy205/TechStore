@@ -21,8 +21,9 @@ router.post(
   createOrderController,
 );
 
-// GET /api/orders/my-orders — Lấy danh sách đơn hàng của user (yêu cầu đăng nhập)
+// GET /api/orders hoặc /api/orders/my-orders — Lấy danh sách đơn hàng của user (yêu cầu đăng nhập)
 router.get("/my-orders", requireAuth, getMyOrdersController);
+router.get("/", requireAuth, getMyOrdersController);
 
 // PUT /api/orders/:id/cancel — Hủy đơn hàng (chỉ khi pending) (yêu cầu đăng nhập)
 router.put("/:id/cancel", requireAuth, cancelOrderController);

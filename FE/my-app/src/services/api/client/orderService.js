@@ -9,7 +9,7 @@ export const orderService = {
   },
 
   getUserOrders: async () => {
-    const res = await httpRequest("/api/orders");
+    const res = await httpRequest("/api/orders/my-orders");
     return res?.data ?? [];
   },
 
