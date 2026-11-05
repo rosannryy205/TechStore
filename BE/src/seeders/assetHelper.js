@@ -375,21 +375,31 @@ async function seedPhysicalAssets() {
     }
   }
 
-  // 3. Sao chép ảnh từ FE nếu có để đồng bộ thêm ảnh phụ
-  const feAssetsDir = path.join(__dirname, "..", "..", "..", "FE", "my-app", "src", "assets");
-  const ip16Source = path.join(feAssetsDir, "ip16PRM.jpg");
-  if (fs.existsSync(ip16Source)) {
-    fs.copyFileSync(ip16Source, path.join(PRODUCTS_SRC_DIR, "ip16PRM.jpg"));
-    fs.copyFileSync(ip16Source, path.join(PRODUCTS_ROOT_DIR, "ip16PRM.jpg"));
-  }
+  // 3. Dọn dẹp triệt để các file rác, file AI generate hoặc file ảnh không hợp lệ
+  const allowedProductFilenames = new Set(PRODUCTS_ASSET_MANIFEST.map((p) => p.filename));
+  const cleanDirectory = (dirPath, allowedSet) => {
+    if (!fs.existsSync(dirPath)) return;
+    const existingFiles = fs.readdirSync(dirPath);
+    for (const file of existingFiles) {
+      if (!allowedSet.has(file)) {
+        try {
+          fs.unlinkSync(path.join(dirPath, file));
+          console.log(`    🗑️  Đã dọn dẹp file không phù hợp: ${file}`);
+        } catch (err) {
+          console.warn(`    ⚠️ Không thể xóa file ${file}:`, err.message);
+        }
+      }
+    }
+  };
 
-  const productSource = path.join(feAssetsDir, "product.jpg");
-  if (fs.existsSync(productSource)) {
-    fs.copyFileSync(productSource, path.join(PRODUCTS_SRC_DIR, "default-product.jpg"));
-    fs.copyFileSync(productSource, path.join(PRODUCTS_ROOT_DIR, "default-product.jpg"));
-  }
+  cleanDirectory(PRODUCTS_SRC_DIR, allowedProductFilenames);
+  cleanDirectory(PRODUCTS_ROOT_DIR, allowedProductFilenames);
 
-  console.log(`  🎉 Hoàn tất nạp toàn bộ ảnh thực tế từ Thế Giới Di Động & CellphoneS vào @BE/src/uploads/products/!`);
+  const allowedBrandFilenames = new Set(Object.keys(BRAND_LOGOS));
+  cleanDirectory(BRANDS_SRC_DIR, allowedBrandFilenames);
+  cleanDirectory(BRANDS_ROOT_DIR, allowedBrandFilenames);
+
+  console.log(`  🎉 Đã làm sạch toàn bộ thư mục uploads, chỉ lưu trữ 100% ảnh sản phẩm thật và logo thương hiệu!`);
 }
 
 module.exports = {
