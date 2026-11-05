@@ -2,32 +2,32 @@ import { useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { SF_DISPLAY, SF_TEXT, MONO_TEXT } from "@/constants/typography";
 import heroImg from "@/assets/hero.png";
-import ip16Img from "@/assets/ip16PRM.jpg";
+import iphone18ProMaxImage from "@/assets/iphone18ProMax.webp";
 import banner1Img from "@/assets/banner1.jpg";
 import banner2Img from "@/assets/banner2.jpg";
 import banner3Img from "@/assets/banner3.jpg";
 
 const FLAGSHIP_HERO_SLIDES = [
   {
-    id: "iphone-16-pro",
-    badge: "Flagship Thế Hệ Mới",
+    id: "iphone-18-pro-max",
+    badge: "iPhone 18 Pro Max",
     titlePrefix: "Kỷ nguyên",
-    titleInlineImg1: ip16Img,
+    titleInlineImg1: iphone18ProMaxImage,
     titleMid: "công nghệ",
     titleInlineImg2: banner2Img,
     titleSuffix: "nguyên khối.",
     description:
-      "Vỏ Titan cấp 5 hàng không vũ trụ kết hợp vi xử lý Apple A18 Pro 3nm. Hệ thống camera Fusion 48MP đưa trải nghiệm thị giác lên tầm cao chuẩn điện ảnh.",
+      "iPhone 18 Pro Max với chip A20 Pro, thiết kế nhôm nguyên khối và camera Fusion 48MP có khẩu độ thay đổi. Sắc Burgundy cùng màn hình Super Retina XDR 6,9 inch mang đến trải nghiệm Pro thế hệ mới.",
     primaryCta: { label: "Khám phá ngay", link: "/products?cate=phone" },
-    deviceImage: ip16Img,
-    chipBadge: "A18 Pro · 3nm",
-    metricValue: "+47.2%",
-    metricLabel: "Băng thông đồ họa GPU",
+    deviceImage: iphone18ProMaxImage,
+    chipBadge: "A20 Pro · 2nm",
+    metricValue: "48MP",
+    metricLabel: "Camera Fusion · Khẩu độ thay đổi",
     ambientColor: "rgba(59, 130, 246, 0.28)",
     specs: [
-      { label: "Màn hình", value: "Super Retina XDR 120Hz" },
-      { label: "Chất liệu", value: "Titanium Tự Nhiên Grade 5" },
-      { label: "Pin liên tục", value: "Lên đến 33 giờ" },
+      { label: "Màn hình", value: "Super Retina XDR 6,9 inch · 120Hz" },
+      { label: "Thiết kế", value: "Nhôm nguyên khối · Burgundy" },
+      { label: "Phát video", value: "Lên đến 45 giờ" },
     ],
   },
   {
@@ -58,7 +58,7 @@ const FLAGSHIP_HERO_SLIDES = [
     titlePrefix: "Âm học",
     titleInlineImg1: banner3Img,
     titleMid: "chuẩn studio",
-    titleInlineImg2: ip16Img,
+    titleInlineImg2: iphone18ProMaxImage,
     titleSuffix: "chân thực.",
     description:
       "Màng loa dynamic do Apple tự thiết kế mang đến độ méo tiếng cực thấp trên toàn dải tần. Chế độ Chống Ồn Chủ Động chủ động cách ly tạp âm hoàn hảo.",

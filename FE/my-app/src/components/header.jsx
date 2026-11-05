@@ -205,7 +205,7 @@ function SearchOverlay({ open, onClose }) {
             </p>
             <div className="flex flex-wrap gap-2">
               {[
-                "iPhone 16 Pro Max",
+                "iPhone 18 Pro Max",
                 "MacBook Pro M3 Max",
                 "iPad Pro M4",
                 "Apple Watch Ultra 2",
