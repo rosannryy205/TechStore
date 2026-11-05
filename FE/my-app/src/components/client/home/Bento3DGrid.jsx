@@ -5,7 +5,7 @@ import { formatVnd } from "@/utils/formatCurrency";
 import Card3D from "./Card3D";
 
 import heroImg from "@/assets/hero.png";
-import ip16Img from "@/assets/ip16PRM.jpg";
+import iphone18ProMaxImage from "@/assets/iphone18ProMax.webp";
 import banner1Img from "@/assets/banner1.jpg";
 import banner2Img from "@/assets/banner2.jpg";
 import banner3Img from "@/assets/banner3.jpg";
@@ -13,17 +13,17 @@ import banner3Img from "@/assets/banner3.jpg";
 // Default Fallback Products with organic pricing if database is empty
 const DEFAULT_BENTO_PRODUCTS = [
   {
-    id: "ip16-pro-max",
-    name: "iPhone 16 Pro Max",
+    id: "iphone-18-pro-max",
+    name: "iPhone 18 Pro Max",
     brand: "Apple",
-    tagline: "Titan Cấp 5. Vi xử lý A18 Pro 3nm mạnh mẽ.",
-    minPrice: 34990000,
-    originalPrice: 36990000,
-    hasSale: true,
-    image: ip16Img,
+    tagline: "A20 Pro. Camera Fusion 48MP với khẩu độ thay đổi.",
+    minPrice: null,
+    originalPrice: null,
+    hasSale: false,
+    image: iphone18ProMaxImage,
     href: "/products?cate=phone",
-    metricBadge: "Titanium Cấp 5",
-    highlightStat: "Ray-tracing x2",
+    metricBadge: "A20 Pro · 2nm",
+    highlightStat: "Video đến 45 giờ",
   },
   {
     id: "macbook-pro-m3",

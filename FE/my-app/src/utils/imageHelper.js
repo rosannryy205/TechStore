@@ -7,6 +7,7 @@ export { defaultProductImage };
  * Phân giải đường dẫn ảnh sản phẩm / avatar bảo toàn 100% logic fallback:
  * - URL tuyệt đối (http://..., https://...) hoặc Data URL (data:...)
  * - Đường dẫn chứa "uploads/"
+ * - Đường dẫn tuyệt đối của tài nguyên frontend (/src/assets/, /assets/)
  * - Tên file đơn thuần nằm trong uploads/products/
  * - Fallback ảnh mặc định
  *
@@ -26,6 +27,10 @@ export function resolveProductImageUrl(image, fallback = defaultProductImage) {
   if (image.includes("uploads/")) {
     const cleanPath = image.replace(/^\//, "");
     return `${API_BASE_URL}/${cleanPath}`;
+  }
+
+  if (image.startsWith("/")) {
+    return image;
   }
 
   return `${API_BASE_URL}/uploads/products/${image}`;
