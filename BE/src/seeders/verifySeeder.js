@@ -48,14 +48,16 @@ async function verify() {
         passed = false;
         continue;
       }
-      const logoPath = path.join(__dirname, "..", "..", b.logo);
-      if (!fs.existsSync(logoPath)) {
-        console.error(`❌ File logo không tồn tại trên đĩa: ${logoPath}`);
+      const logoSrcPath = path.join(__dirname, "..", b.logo);
+      const logoRootPath = path.join(__dirname, "..", "..", b.logo);
+      const logoExists = fs.existsSync(logoSrcPath) || fs.existsSync(logoRootPath);
+      if (!logoExists) {
+        console.error(`❌ File logo không tồn tại trên đĩa: ${logoSrcPath}`);
         passed = false;
       } else {
-        const stat = fs.statSync(logoPath);
+        const stat = fs.statSync(fs.existsSync(logoSrcPath) ? logoSrcPath : logoRootPath);
         if (stat.size === 0) {
-          console.error(`❌ File logo bị rỗng (0 bytes): ${logoPath}`);
+          console.error(`❌ File logo bị rỗng (0 bytes): ${logoSrcPath}`);
           passed = false;
         } else {
           console.log(`  ✔️  Logo ${b.name}: ${b.logo} (${stat.size} bytes) - TỒN TẠI VÀ HỢP LỆ`);
@@ -88,14 +90,17 @@ async function verify() {
       }
 
       for (const img of p.images) {
-        const imgPath = path.join(__dirname, "..", "..", img.img_url);
-        if (!fs.existsSync(imgPath)) {
-          console.error(`❌ File ảnh của [${p.name}] không tồn tại trên đĩa: ${imgPath}`);
+        const imgSrcPath = path.join(__dirname, "..", img.img_url);
+        const imgRootPath = path.join(__dirname, "..", "..", img.img_url);
+        const imgExists = fs.existsSync(imgSrcPath) || fs.existsSync(imgRootPath);
+        if (!imgExists) {
+          console.error(`❌ File ảnh của [${p.name}] không tồn tại trên đĩa: ${imgSrcPath}`);
           passed = false;
         } else {
-          const stat = fs.statSync(imgPath);
+          const finalPath = fs.existsSync(imgSrcPath) ? imgSrcPath : imgRootPath;
+          const stat = fs.statSync(finalPath);
           if (stat.size === 0) {
-            console.error(`❌ File ảnh [${p.name}] bị rỗng: ${imgPath}`);
+            console.error(`❌ File ảnh [${p.name}] bị rỗng: ${finalPath}`);
             passed = false;
           } else {
             verifiedImagesCount++;

@@ -83,7 +83,7 @@ async function runSeeder() {
 
     // 1. Khởi tạo tài nguyên ảnh vật lý trong uploads/products/ và uploads/brands/
     console.log("📂 BƯỚC 1: Khởi tạo tài nguyên ảnh cục bộ (Local Asset Bundle)...");
-    seedPhysicalAssets();
+    await seedPhysicalAssets();
     console.log("✅ Hoàn tất Bước 1.\n");
 
     // 2. Seed Categories
@@ -232,15 +232,14 @@ async function runSeeder() {
 
       // Seed Images cho Product
       const defaultVariantId = createdVariants[0]?.id || 1;
+      // Dọn dẹp ảnh cũ nếu có để đồng bộ hoàn toàn sang danh mục ảnh thực tế PNG
+      await ProductImage.destroy({ where: { product_id: product.id } });
       for (const img of p.images) {
-        await ProductImage.findOrCreate({
-          where: { product_id: product.id, img_url: img.img_url },
-          defaults: {
-            product_id: product.id,
-            variant_id: defaultVariantId,
-            img_url: img.img_url,
-            sort_order: img.sort_order,
-          },
+        await ProductImage.create({
+          product_id: product.id,
+          variant_id: defaultVariantId,
+          img_url: img.img_url,
+          sort_order: img.sort_order,
         });
       }
     }

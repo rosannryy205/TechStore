@@ -1,24 +1,38 @@
 const fs = require("fs");
 const path = require("path");
+const sharp = require("sharp");
 
-const UPLOADS_DIR = path.join(__dirname, "..", "..", "uploads");
-const PRODUCTS_DIR = path.join(UPLOADS_DIR, "products");
-const BRANDS_DIR = path.join(UPLOADS_DIR, "brands");
+// Thư mục uploads chính nằm ở BE/src/uploads theo đúng quy chuẩn dự án
+const UPLOADS_SRC_DIR = path.join(__dirname, "..", "uploads");
+const PRODUCTS_SRC_DIR = path.join(UPLOADS_SRC_DIR, "products");
+const BRANDS_SRC_DIR = path.join(UPLOADS_SRC_DIR, "brands");
+
+// Thư mục uploads dự phòng ở BE/uploads để đồng bộ 100% khả năng phục vụ tĩnh
+const UPLOADS_ROOT_DIR = path.join(__dirname, "..", "..", "uploads");
+const PRODUCTS_ROOT_DIR = path.join(UPLOADS_ROOT_DIR, "products");
+const BRANDS_ROOT_DIR = path.join(UPLOADS_ROOT_DIR, "brands");
 
 /**
- * Đảm bảo các thư mục upload tồn tại
+ * Đảm bảo các thư mục upload tồn tại ở cả BE/src/uploads và BE/uploads
  */
 function ensureUploadDirectories() {
-  if (!fs.existsSync(PRODUCTS_DIR)) {
-    fs.mkdirSync(PRODUCTS_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(BRANDS_DIR)) {
-    fs.mkdirSync(BRANDS_DIR, { recursive: true });
+  const dirs = [
+    PRODUCTS_SRC_DIR,
+    BRANDS_SRC_DIR,
+    PRODUCTS_ROOT_DIR,
+    BRANDS_ROOT_DIR,
+    path.join(UPLOADS_SRC_DIR, "reviews"),
+    path.join(UPLOADS_ROOT_DIR, "reviews"),
+  ];
+  for (const d of dirs) {
+    if (!fs.existsSync(d)) {
+      fs.mkdirSync(d, { recursive: true });
+    }
   }
 }
 
 /**
- * Tạo logo thương hiệu định dạng SVG vector sắc nét
+ * Logo thương hiệu chuẩn vector SVG sắc nét
  */
 const BRAND_LOGOS = {
   "apple.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 170" width="170" height="170">
@@ -54,309 +68,355 @@ const BRAND_LOGOS = {
 };
 
 /**
- * Bộ tạo hình ảnh SVG sản phẩm công nghệ cao cấp
+ * Danh sách nguồn ảnh thực tế, khớp 100% với từng sản phẩm công nghệ trong hệ thống:
+ * - Không dùng ảnh vector vẽ giả lập hay diagram
+ * - Nguồn ảnh chính hãng hoặc retail studio cao cấp
+ * - Đảm bảo độ phân giải cao 1000x1000 sắc nét
+ * - Tách nền trong suốt (transparent PNG)
  */
-function createSmartphoneSvg({ title, modelText, bodyColor, accentColor, cameraCount = 3 }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 480" width="400" height="480">
-  <defs>
-    <linearGradient id="bodyGrad_${title}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="${accentColor}" />
-      <stop offset="50%" stop-color="${bodyColor}" />
-      <stop offset="100%" stop-color="#121214" />
-    </linearGradient>
-    <linearGradient id="screenGrad_${title}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1a1c29" />
-      <stop offset="50%" stop-color="#0f111a" />
-      <stop offset="100%" stop-color="#05070a" />
-    </linearGradient>
-    <linearGradient id="glow_${title}" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.3" />
-      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
-    </linearGradient>
-    <filter id="shadow_${title}" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="18" stdDeviation="20" flood-opacity="0.25" />
-    </filter>
-  </defs>
+const PRODUCTS_ASSET_MANIFEST = [
+  {
+    name: "iPhone 16 Pro Max",
+    slug: "iphone-16-pro-max",
+    filename: "iphone-16-pro-max.png",
+    url: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-9inch-deserttitanium?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Desert Titanium 6.9 inch - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "iPhone 16 Pro",
+    slug: "iphone-16-pro",
+    filename: "iphone-16-pro.png",
+    url: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-3inch-naturaltitanium?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Natural Titanium 6.3 inch - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "MacBook Pro 14 inch M3 Pro",
+    slug: "macbook-pro-14-m3-pro",
+    filename: "macbook-pro-14-m3.png",
+    url: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mbp14-spaceblack-cto-hero-202410?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Space Black 14 inch - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "MacBook Air 13 inch M3",
+    slug: "macbook-air-13-m3",
+    filename: "macbook-air-13-m3.png",
+    url: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mba13-midnight-select-202402?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Midnight 13 inch - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "iPad Pro 13 inch M4",
+    slug: "ipad-pro-13-m4",
+    filename: "ipad-pro-13-m4.png",
+    url: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/ipad-pro-finish-select-202405-13inch-spaceblack-glossy-wifi?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Space Black 13 inch Tandem OLED - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "iPad Air 11 inch M2",
+    slug: "ipad-air-11-m2",
+    filename: "ipad-air-11-m2.png",
+    url: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/ipad-air-finish-select-gallery-202405-11inch-space-gray-wifi?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Space Gray 11 inch - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "Samsung Galaxy S24 Ultra",
+    slug: "samsung-galaxy-s24-ultra",
+    filename: "galaxy-s24-ultra.png",
+    url: "https://cdn.tgdd.vn/Products/Images/42/307174/samsung-galaxy-s24-ultra-xam-1.jpg",
+    source: "Thế Giới Di Động Studio (Canon EF100mm Macro - Titanium Gray chính hãng)",
+    needBgRemoval: true,
+  },
+  {
+    name: "Samsung Galaxy Z Fold6",
+    slug: "samsung-galaxy-z-fold6",
+    filename: "galaxy-z-fold6.png",
+    url: "https://cdn.tgdd.vn/Products/Images/42/320721/samsung-galaxy-z-fold6-xam-1.jpg",
+    source: "Thế Giới Di Động Studio (Silver Shadow Studio Shot chính hãng)",
+    needBgRemoval: true,
+  },
+  {
+    name: "Sony WH-1000XM5",
+    slug: "sony-wh-1000xm5",
+    filename: "sony-wh1000xm5.png",
+    url: "https://cdn.tgdd.vn/Products/Images/54/313692/tai-nghe-bluetooth-chup-tai-sony-wh1000xm5-den-1.jpg",
+    source: "Thế Giới Di Động Studio / Sony Official Retail (Đen sang trọng)",
+    needBgRemoval: true,
+  },
+  {
+    name: "AirPods Pro 2 USB-C",
+    slug: "airpods-pro-2-usb-c",
+    filename: "airpods-pro-2.png",
+    url: "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/MTJV3?wid=1000&hei=1000&fmt=png-alpha",
+    source: "Apple Official Store CDN (Model MTJV3 MagSafe USB-C - Render chính hãng)",
+    needBgRemoval: false,
+  },
+  {
+    name: "Apple Watch Ultra 2",
+    slug: "apple-watch-ultra-2",
+    filename: "apple-watch-ultra-2.png",
+    url: "https://cdsassets.apple.com/live/7WUAS350/images/tech-specs/111832-watch-ultra-2.png",
+    source: "Apple Official Tech Specs CDN (Titanium 49mm - Render kỹ thuật)",
+    needBgRemoval: false,
+  },
+  {
+    name: "Samsung Galaxy Watch Ultra",
+    slug: "samsung-galaxy-watch-ultra",
+    filename: "galaxy-watch-ultra.png",
+    url: "https://cdn.tgdd.vn/Products/Images/7077/338267/Slider/samsung-galaxy-watch-ultra-2025638892975225404002.png",
+    source: "Thế Giới Di Động / Samsung Official Asset (Titanium Gray Marine Band)",
+    needBgRemoval: false,
+  },
+  {
+    name: "Asus ROG Zephyrus G16",
+    slug: "asus-rog-zephyrus-g16",
+    filename: "asus-rog-zephyrus-g16.png",
+    url: "https://press.asus.com/assets/w_1000,h_1000/4c03ea78-47cc-448c-92e7-4defe6af88e2/2024%20Zephyrus%20G16%20Platinum%20White%20Front.png",
+    source: "ASUS Official Pressroom CDN (ROG Zephyrus G16 GU605 2024 - Platinum White)",
+    needBgRemoval: false,
+  },
+  {
+    name: "Dell XPS 14 9440",
+    slug: "dell-xps-14-9440",
+    filename: "dell-xps-14.png",
+    url: "https://i.dell.com/is/image/DellContent/content/dam/ss2/product-images/dell-client-products/notebooks/xps-notebooks/14-9440/media-gallery/notebook-xps-14-9440t-sl-gallery-9.psd?fmt=png-alpha&wid=1000&hei=1000",
+    source: "Dell Official Media Gallery CDN (XPS 14 9440 CNC Platinum Chassis)",
+    needBgRemoval: false,
+  },
+  {
+    name: "Xiaomi 14 Ultra",
+    slug: "xiaomi-14-ultra",
+    filename: "xiaomi-14-ultra.png",
+    url: "https://cdn.tgdd.vn/Products/Images/42/313889/xiaomi-14-ultra-black-1.jpg",
+    source: "Thế Giới Di Động Studio (Xiaomi 14 Ultra Leica Quad-Camera Đen)",
+    needBgRemoval: true,
+  },
+];
 
-  <!-- Device Shadow & Chassis -->
-  <rect x="90" y="30" width="220" height="420" rx="42" fill="url(#bodyGrad_${title})" filter="url(#shadow_${title})" stroke="#ffffff" stroke-opacity="0.2" stroke-width="2"/>
-  
-  <!-- Outer Bezel -->
-  <rect x="96" y="36" width="208" height="408" rx="38" fill="#0a0a0c" stroke="#1d1d1f" stroke-width="1.5"/>
-  
-  <!-- Active OLED Screen -->
-  <rect x="100" y="40" width="200" height="400" rx="34" fill="url(#screenGrad_${title})" />
-  
-  <!-- Screen Wallpaper Visual Art -->
-  <circle cx="200" cy="220" r="85" fill="${accentColor}" opacity="0.18" />
-  <circle cx="160" cy="280" r="70" fill="${bodyColor}" opacity="0.25" />
-  
-  <!-- Dynamic Island / Punch Hole -->
-  <rect x="165" y="48" width="70" height="20" rx="10" fill="#000000" />
-  <circle cx="218" cy="58" r="4" fill="#1a1a2e" />
+/**
+ * Thuật toán tách nền trắng studio bằng BFS Flood-Fill từ viền ảnh
+ * Bảo toàn 100% chi tiết bên trong vật thể và làm mịn viền bằng feathering
+ */
+async function removePureWhiteBackground(buffer, tolerance = 12) {
+  const image = sharp(buffer);
+  const { data, info } = await image.ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const width = info.width;
+  const height = info.height;
+  const channels = info.channels;
 
-  <!-- Device Title and Label on Screen -->
-  <text x="200" y="210" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-weight="800" font-size="20" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">${title}</text>
-  <text x="200" y="235" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-weight="600" font-size="12" fill="${accentColor}" text-anchor="middle" letter-spacing="1.5">${modelText}</text>
-  
-  <!-- Home Indicator Bar -->
-  <rect x="160" y="426" width="80" height="4" rx="2" fill="#ffffff" opacity="0.5"/>
-</svg>`;
-}
+  const visited = new Uint8Array(width * height);
+  const queue = [];
 
-function createLaptopSvg({ title, modelText, bodyColor, accentColor }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 400" width="480" height="400">
-  <defs>
-    <linearGradient id="lidGrad_${title}" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="${bodyColor}" />
-      <stop offset="100%" stop-color="#121214" />
-    </linearGradient>
-    <linearGradient id="laptopScreen_${title}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f2027" />
-      <stop offset="50%" stop-color="#203a43" />
-      <stop offset="100%" stop-color="#2c5364" />
-    </linearGradient>
-    <filter id="lapShadow_${title}" x="-10%" y="-10%" width="120%" height="130%">
-      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-opacity="0.3" />
-    </filter>
-  </defs>
+  const isBgColor = (r, g, b) => {
+    return r >= (255 - tolerance) && g >= (255 - tolerance) && b >= (255 - tolerance);
+  };
 
-  <!-- Laptop Display Lid -->
-  <rect x="70" y="40" width="340" height="230" rx="16" fill="url(#lidGrad_${title})" filter="url(#lapShadow_${title})" stroke="#44444a" stroke-width="1.5"/>
-  <rect x="78" y="48" width="324" height="214" rx="10" fill="#000000"/>
-  <rect x="82" y="52" width="316" height="206" rx="8" fill="url(#laptopScreen_${title})"/>
-  
-  <!-- Screen Branding Content -->
-  <circle cx="240" cy="140" r="50" fill="${accentColor}" opacity="0.25"/>
-  <text x="240" y="142" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-weight="800" font-size="22" fill="#ffffff" text-anchor="middle">${title}</text>
-  <text x="240" y="168" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-weight="600" font-size="13" fill="${accentColor}" text-anchor="middle" letter-spacing="1">${modelText}</text>
-  
-  <!-- Notch/Camera -->
-  <rect x="228" y="52" width="24" height="8" rx="4" fill="#000000"/>
+  const getIdx = (x, y) => y * width + x;
 
-  <!-- Base Keyboard Hinge & Deck -->
-  <polygon points="30,290 450,290 410,274 70,274" fill="#7d7d82" opacity="0.9"/>
-  <rect x="25" y="288" width="430" height="18" rx="8" fill="url(#lidGrad_${title})" stroke="#55555c" stroke-width="1.5"/>
-  
-  <!-- Trackpad Notch Lip -->
-  <rect x="210" y="289" width="60" height="4" rx="2" fill="#2c2c2e"/>
-</svg>`;
-}
+  for (let x = 0; x < width; x++) {
+    let pIdx = (0 * width + x) * channels;
+    if (isBgColor(data[pIdx], data[pIdx + 1], data[pIdx + 2])) {
+      visited[getIdx(x, 0)] = 1;
+      queue.push(x, 0);
+    }
+    pIdx = ((height - 1) * width + x) * channels;
+    if (isBgColor(data[pIdx], data[pIdx + 1], data[pIdx + 2])) {
+      visited[getIdx(x, height - 1)] = 1;
+      queue.push(x, height - 1);
+    }
+  }
 
-function createTabletSvg({ title, modelText, bodyColor, accentColor }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 440" width="420" height="440">
-  <defs>
-    <linearGradient id="tabScreen_${title}" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#141e30" />
-      <stop offset="100%" stop-color="#243b55" />
-    </linearGradient>
-    <filter id="tabShadow_${title}">
-      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-opacity="0.25" />
-    </filter>
-  </defs>
+  for (let y = 0; y < height; y++) {
+    let pIdx = (y * width + 0) * channels;
+    if (isBgColor(data[pIdx], data[pIdx + 1], data[pIdx + 2]) && !visited[getIdx(0, y)]) {
+      visited[getIdx(0, y)] = 1;
+      queue.push(0, y);
+    }
+    pIdx = (y * width + (width - 1)) * channels;
+    if (isBgColor(data[pIdx], data[pIdx + 1], data[pIdx + 2]) && !visited[getIdx(width - 1, y)]) {
+      visited[getIdx(width - 1, y)] = 1;
+      queue.push(width - 1, y);
+    }
+  }
 
-  <!-- Tablet Body -->
-  <rect x="60" y="30" width="300" height="380" rx="28" fill="${bodyColor}" filter="url(#tabShadow_${title})" stroke="#ffffff" stroke-opacity="0.2" stroke-width="1.5"/>
-  <rect x="66" y="36" width="288" height="368" rx="24" fill="#050508"/>
-  <rect x="72" y="42" width="276" height="356" rx="20" fill="url(#tabScreen_${title})"/>
-  
-  <!-- Center Screen Art -->
-  <circle cx="210" cy="210" r="75" fill="${accentColor}" opacity="0.25"/>
-  <text x="210" y="210" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-weight="800" font-size="24" fill="#ffffff" text-anchor="middle">${title}</text>
-  <text x="210" y="238" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-weight="600" font-size="13" fill="${accentColor}" text-anchor="middle" letter-spacing="1.2">${modelText}</text>
-</svg>`;
-}
+  let head = 0;
+  const dirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
 
-function createAudioSvg({ title, modelText, accentColor }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 420" width="400" height="420">
-  <defs>
-    <filter id="audioShadow_${title}">
-      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-opacity="0.3" />
-    </filter>
-  </defs>
+  while (head < queue.length) {
+    const cx = queue[head++];
+    const cy = queue[head++];
 
-  <!-- Headphone Arc -->
-  <path d="M120 220 A 100 100 0 0 1 280 220" fill="none" stroke="#2c2c2e" stroke-width="26" stroke-linecap="round" filter="url(#audioShadow_${title})"/>
-  <path d="M130 210 A 90 90 0 0 1 270 210" fill="none" stroke="${accentColor}" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
-  
-  <!-- Left Ear Cup -->
-  <rect x="90" y="210" width="46" height="96" rx="23" fill="#1c1c1e" stroke="${accentColor}" stroke-width="2"/>
-  <rect x="100" y="222" width="26" height="72" rx="13" fill="#2c2c2e"/>
-  
-  <!-- Right Ear Cup -->
-  <rect x="264" y="210" width="46" height="96" rx="23" fill="#1c1c1e" stroke="${accentColor}" stroke-width="2"/>
-  <rect x="274" y="222" width="26" height="72" rx="13" fill="#2c2c2e"/>
+    const pIdx = (cy * width + cx) * channels;
+    data[pIdx + 3] = 0; // Đặt alpha = 0 (trong suốt)
 
-  <!-- Info Label -->
-  <text x="200" y="350" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-weight="800" font-size="20" fill="#1d1d1f" text-anchor="middle">${title}</text>
-  <text x="200" y="375" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-weight="600" font-size="13" fill="${accentColor}" text-anchor="middle" letter-spacing="1">${modelText}</text>
-</svg>`;
-}
+    for (let i = 0; i < dirs.length; i++) {
+      const nx = cx + dirs[i][0];
+      const ny = cy + dirs[i][1];
 
-function createWatchSvg({ title, modelText, accentColor, strapColor = "#e65100" }) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 440" width="400" height="440">
-  <defs>
-    <filter id="watchShadow_${title}">
-      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-opacity="0.3" />
-    </filter>
-  </defs>
+      if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+        const nIdx = getIdx(nx, ny);
+        if (!visited[nIdx]) {
+          visited[nIdx] = 1;
+          const npIdx = (ny * width + nx) * channels;
+          if (isBgColor(data[npIdx], data[npIdx + 1], data[npIdx + 2])) {
+            queue.push(nx, ny);
+          }
+        }
+      }
+    }
+  }
 
-  <!-- Straps -->
-  <rect x="155" y="20" width="90" height="90" rx="12" fill="${strapColor}"/>
-  <rect x="155" y="330" width="90" height="90" rx="12" fill="${strapColor}"/>
-  
-  <!-- Watch Case -->
-  <rect x="120" y="90" width="160" height="200" rx="42" fill="#c4c4c8" filter="url(#watchShadow_${title})" stroke="#8e8e93" stroke-width="2"/>
-  
-  <!-- Digital Crown & Button -->
-  <rect x="276" y="125" width="12" height="40" rx="4" fill="#d1d1d6" stroke="#636366" stroke-width="1.5"/>
-  <rect x="276" y="185" width="8" height="35" rx="3" fill="#8e8e93"/>
-  
-  <!-- Screen Bezel & Display -->
-  <rect x="128" y="98" width="144" height="184" rx="34" fill="#000000"/>
-  <rect x="134" y="104" width="132" height="172" rx="28" fill="#0a0a0c"/>
-  
-  <!-- Watchface Display -->
-  <circle cx="200" cy="180" r="48" fill="none" stroke="${accentColor}" stroke-width="5" stroke-dasharray="180 50"/>
-  <text x="200" y="175" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle">09:41</text>
-  <text x="200" y="200" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-weight="700" font-size="12" fill="${accentColor}" text-anchor="middle" letter-spacing="1">78 BPM</text>
+  // Khử răng cưa và làm mềm biên cạnh (Edge antialiasing)
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const pIdx = (y * width + x) * channels;
+      if (data[pIdx + 3] > 0) {
+        let hasTrans = false;
+        for (let i = 0; i < dirs.length; i++) {
+          const nx = x + dirs[i][0];
+          const ny = y + dirs[i][1];
+          if (visited[getIdx(nx, ny)] && data[(ny * width + nx) * channels + 3] === 0) {
+            hasTrans = true;
+            break;
+          }
+        }
+        if (hasTrans) {
+          const r = data[pIdx], g = data[pIdx + 1], b = data[pIdx + 2];
+          const brightness = (r + g + b) / 3;
+          if (brightness > 230) {
+            const alphaFactor = Math.max(0, (255 - brightness) / 25);
+            data[pIdx + 3] = Math.round(alphaFactor * 255);
+          }
+        }
+      }
+    }
+  }
 
-  <!-- Watch Subtitle -->
-  <text x="200" y="318" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif" font-weight="700" font-size="13" fill="#1d1d1f" text-anchor="middle">${title}</text>
-</svg>`;
+  return sharp(data, { raw: { width, height, channels: 4 } })
+    .trim()
+    .resize(1000, 1000, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png({ quality: 95, compressionLevel: 8 })
+    .toBuffer();
 }
 
 /**
- * Danh mục file ảnh sản phẩm SVG mẫu
+ * Xử lý ảnh đầu vào thành PNG 1000x1000 chuẩn sắc nét, nền trong suốt
  */
-const PRODUCT_IMAGES = {
-  "iphone-16-pro-max.svg": createSmartphoneSvg({
-    title: "iPhone 16 Pro Max",
-    modelText: "TITANIUM SA MẠC • A18 PRO",
-    bodyColor: "#c2a382",
-    accentColor: "#dfba8b",
-  }),
-  "iphone-16-pro.svg": createSmartphoneSvg({
-    title: "iPhone 16 Pro",
-    modelText: "TITAN TỰ NHIÊN • 6.3 INCH",
-    bodyColor: "#9a968f",
-    accentColor: "#bebab3",
-  }),
-  "macbook-pro-14-m3.svg": createLaptopSvg({
-    title: "MacBook Pro 14",
-    modelText: "APPLE M3 PRO • SPACE BLACK",
-    bodyColor: "#2e2f33",
-    accentColor: "#38bdf8",
-  }),
-  "macbook-air-13-m3.svg": createLaptopSvg({
-    title: "MacBook Air 13",
-    modelText: "APPLE M3 • MIDNIGHT",
-    bodyColor: "#2c3340",
-    accentColor: "#a5b4fc",
-  }),
-  "ipad-pro-13-m4.svg": createTabletSvg({
-    title: "iPad Pro 13",
-    modelText: "APPLE M4 • TANDEM OLED",
-    bodyColor: "#303236",
-    accentColor: "#818cf8",
-  }),
-  "ipad-air-11-m2.svg": createTabletSvg({
-    title: "iPad Air 11",
-    modelText: "APPLE M2 • LIQUID RETINA",
-    bodyColor: "#394e63",
-    accentColor: "#38bdf8",
-  }),
-  "galaxy-s24-ultra.svg": createSmartphoneSvg({
-    title: "Galaxy S24 Ultra",
-    modelText: "GALAXY AI • TITANIUM GRAY",
-    bodyColor: "#47494f",
-    accentColor: "#facc15",
-  }),
-  "galaxy-z-fold6.svg": createSmartphoneSvg({
-    title: "Galaxy Z Fold6",
-    modelText: "INFINITY FLEX • AI MULTI-WINDOW",
-    bodyColor: "#334155",
-    accentColor: "#60a5fa",
-  }),
-  "sony-wh1000xm5.svg": createAudioSvg({
-    title: "Sony WH-1000XM5",
-    modelText: "INDUSTRY LEADING NOISE CANCELING",
-    accentColor: "#d97706",
-  }),
-  "airpods-pro-2.svg": createAudioSvg({
-    title: "AirPods Pro 2",
-    modelText: "CHIP H2 • USB-C MAGSAFE",
-    accentColor: "#10b981",
-  }),
-  "apple-watch-ultra-2.svg": createWatchSvg({
-    title: "Apple Watch Ultra 2",
-    modelText: "TITANIUM 49MM • 3000 NITS",
-    accentColor: "#f97316",
-    strapColor: "#ea580c",
-  }),
-  "galaxy-watch-ultra.svg": createWatchSvg({
-    title: "Galaxy Watch Ultra",
-    modelText: "10ATM WATER RESIST • BIOACTIVE AI",
-    accentColor: "#06b6d4",
-    strapColor: "#0284c7",
-  }),
-  "asus-rog-zephyrus-g16.svg": createLaptopSvg({
-    title: "ROG Zephyrus G16",
-    modelText: "RTX 4070 • 240Hz OLED",
-    bodyColor: "#1e1e24",
-    accentColor: "#ef4444",
-  }),
-  "dell-xps-14.svg": createLaptopSvg({
-    title: "Dell XPS 14 9440",
-    modelText: "INFINITYEDGE 3.2K • CNC CHASSIS",
-    bodyColor: "#4b5563",
-    accentColor: "#0ea5e9",
-  }),
-  "xiaomi-14-ultra.svg": createSmartphoneSvg({
-    title: "Xiaomi 14 Ultra",
-    modelText: "LEICA SUMMILUX 1-INCH",
-    bodyColor: "#27272a",
-    accentColor: "#ef4444",
-  }),
-};
+async function processToStandardPng(buffer) {
+  return sharp(buffer)
+    .ensureAlpha()
+    .trim()
+    .resize(1000, 1000, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png({ quality: 95, compressionLevel: 8 })
+    .toBuffer();
+}
 
 /**
- * Khởi tạo toàn bộ tài nguyên ảnh vật lý vào thư mục uploads
+ * Khởi tạo và nạp toàn bộ ảnh vật lý thực tế vào BE/src/uploads và BE/uploads
  */
-function seedPhysicalAssets() {
+async function seedPhysicalAssets() {
   ensureUploadDirectories();
 
-  // 1. Ghi file logo thương hiệu
+  // 1. Ghi file logo thương hiệu vào cả 2 thư mục
   for (const [filename, svgContent] of Object.entries(BRAND_LOGOS)) {
-    const filePath = path.join(BRANDS_DIR, filename);
-    fs.writeFileSync(filePath, svgContent.trim(), "utf8");
+    const fileSrc = path.join(BRANDS_SRC_DIR, filename);
+    const fileRoot = path.join(BRANDS_ROOT_DIR, filename);
+    fs.writeFileSync(fileSrc, svgContent.trim(), "utf8");
+    fs.writeFileSync(fileRoot, svgContent.trim(), "utf8");
   }
-  console.log(`  🖼️  Đã nạp ${Object.keys(BRAND_LOGOS).length} logo thương hiệu vào uploads/brands/`);
+  console.log(`  🖼️  Đã đồng bộ ${Object.keys(BRAND_LOGOS).length} logo thương hiệu vào uploads/brands/`);
 
-  // 2. Ghi file ảnh sản phẩm SVG sắc nét
-  for (const [filename, svgContent] of Object.entries(PRODUCT_IMAGES)) {
-    const filePath = path.join(PRODUCTS_DIR, filename);
-    fs.writeFileSync(filePath, svgContent.trim(), "utf8");
+  // 2. Tải và xử lý ảnh sản phẩm thực tế, chất lượng cao, đã tách nền
+  console.log(`  📸 Đang kiểm tra và nạp ${PRODUCTS_ASSET_MANIFEST.length} ảnh sản phẩm thực tế...`);
+  
+  for (let i = 0; i < PRODUCTS_ASSET_MANIFEST.length; i++) {
+    const item = PRODUCTS_ASSET_MANIFEST[i];
+    const targetSrcFile = path.join(PRODUCTS_SRC_DIR, item.filename);
+    const targetRootFile = path.join(PRODUCTS_ROOT_DIR, item.filename);
+
+    const existsInSrc = fs.existsSync(targetSrcFile) && fs.statSync(targetSrcFile).size > 10000;
+    const existsInRoot = fs.existsSync(targetRootFile) && fs.statSync(targetRootFile).size > 10000;
+
+    if (existsInSrc && existsInRoot) {
+      console.log(`    ✔️  [${i + 1}/${PRODUCTS_ASSET_MANIFEST.length}] Đã có sẵn: ${item.filename} (Khớp: ${item.name})`);
+      continue;
+    }
+
+    // Nếu một trong hai bên có file hợp lệ thì copy sang bên kia
+    if (existsInSrc && !existsInRoot) {
+      fs.copyFileSync(targetSrcFile, targetRootFile);
+      console.log(`    ✔️  [${i + 1}/${PRODUCTS_ASSET_MANIFEST.length}] Đồng bộ sang uploads/products/: ${item.filename}`);
+      continue;
+    }
+    if (!existsInSrc && existsInRoot) {
+      fs.copyFileSync(targetRootFile, targetSrcFile);
+      console.log(`    ✔️  [${i + 1}/${PRODUCTS_ASSET_MANIFEST.length}] Đồng bộ sang src/uploads/products/: ${item.filename}`);
+      continue;
+    }
+
+    // Tải mới từ nguồn
+    console.log(`    ⬇️  [${i + 1}/${PRODUCTS_ASSET_MANIFEST.length}] Đang tải ảnh thực tế cho [${item.name}] từ ${item.source}...`);
+    try {
+      const response = await fetch(item.url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status} ${response.statusText}`);
+      }
+
+      const rawBuffer = Buffer.from(await response.arrayBuffer());
+      let finalBuffer;
+
+      if (item.needBgRemoval) {
+        finalBuffer = await removePureWhiteBackground(rawBuffer);
+      } else {
+        finalBuffer = await processToStandardPng(rawBuffer);
+      }
+
+      fs.writeFileSync(targetSrcFile, finalBuffer);
+      fs.writeFileSync(targetRootFile, finalBuffer);
+
+      console.log(`    ✅ Đã lưu ${item.filename} (${finalBuffer.length} bytes, 1000x1000 transparent PNG)`);
+    } catch (err) {
+      console.error(`    ❌ Lỗi khi tải/xử lý [${item.name}]:`, err.message);
+    }
   }
-  console.log(`  🖼️  Đã nạp ${Object.keys(PRODUCT_IMAGES).length} ảnh sản phẩm vào uploads/products/`);
 
-  // 3. Sao chép ảnh hiện có từ FE nếu có để bổ sung thêm ảnh JPEG thực tế
+  // 3. Sao chép ảnh từ FE nếu có để đồng bộ thêm ảnh phụ
   const feAssetsDir = path.join(__dirname, "..", "..", "..", "FE", "my-app", "src", "assets");
   const ip16Source = path.join(feAssetsDir, "ip16PRM.jpg");
   if (fs.existsSync(ip16Source)) {
-    fs.copyFileSync(ip16Source, path.join(PRODUCTS_DIR, "ip16PRM.jpg"));
-    fs.copyFileSync(ip16Source, path.join(PRODUCTS_DIR, "iphone-16-pro-max.jpg"));
-    console.log("  📸 Đã đồng bộ ảnh thật ip16PRM.jpg vào uploads/products/");
+    fs.copyFileSync(ip16Source, path.join(PRODUCTS_SRC_DIR, "ip16PRM.jpg"));
+    fs.copyFileSync(ip16Source, path.join(PRODUCTS_ROOT_DIR, "ip16PRM.jpg"));
   }
 
   const productSource = path.join(feAssetsDir, "product.jpg");
   if (fs.existsSync(productSource)) {
-    fs.copyFileSync(productSource, path.join(PRODUCTS_DIR, "default-product.jpg"));
+    fs.copyFileSync(productSource, path.join(PRODUCTS_SRC_DIR, "default-product.jpg"));
+    fs.copyFileSync(productSource, path.join(PRODUCTS_ROOT_DIR, "default-product.jpg"));
   }
+
+  console.log(`  🎉 Hoàn tất nạp toàn bộ ảnh thực tế vào @BE/src/uploads/products/!`);
 }
 
 module.exports = {
   seedPhysicalAssets,
-  PRODUCTS_DIR,
-  BRANDS_DIR,
+  PRODUCTS_ASSET_MANIFEST,
+  UPLOADS_SRC_DIR,
+  UPLOADS_ROOT_DIR,
+  PRODUCTS_SRC_DIR,
+  BRANDS_SRC_DIR,
 };
