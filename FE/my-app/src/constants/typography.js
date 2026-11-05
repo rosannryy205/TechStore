@@ -1,2 +1,3 @@
-export const SF_DISPLAY = "SF Pro Display, system-ui, -apple-system, sans-serif";
-export const SF_TEXT = "SF Pro Text, system-ui, -apple-system, sans-serif";
+export const SF_DISPLAY = "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+export const SF_TEXT = "'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+export const MONO_TEXT = "'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace";
