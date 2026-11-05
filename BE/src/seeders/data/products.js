@@ -8,8 +8,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 128,
     images: [
-      { img_url: "uploads/products/iphone-16-pro-max.svg", sort_order: 1 },
-      { img_url: "uploads/products/iphone-16-pro-max.jpg", sort_order: 2 },
+      { img_url: "uploads/products/iphone-16-pro-max.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -59,7 +58,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 86,
     images: [
-      { img_url: "uploads/products/iphone-16-pro.svg", sort_order: 1 },
+      { img_url: "uploads/products/iphone-16-pro.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -91,7 +90,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 54,
     images: [
-      { img_url: "uploads/products/macbook-pro-14-m3.svg", sort_order: 1 },
+      { img_url: "uploads/products/macbook-pro-14-m3.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -123,7 +122,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 110,
     images: [
-      { img_url: "uploads/products/macbook-air-13-m3.svg", sort_order: 1 },
+      { img_url: "uploads/products/macbook-air-13-m3.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -155,7 +154,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 42,
     images: [
-      { img_url: "uploads/products/ipad-pro-13-m4.svg", sort_order: 1 },
+      { img_url: "uploads/products/ipad-pro-13-m4.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -187,7 +186,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 67,
     images: [
-      { img_url: "uploads/products/ipad-air-11-m2.svg", sort_order: 1 },
+      { img_url: "uploads/products/ipad-air-11-m2.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -219,7 +218,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 95,
     images: [
-      { img_url: "uploads/products/galaxy-s24-ultra.svg", sort_order: 1 },
+      { img_url: "uploads/products/galaxy-s24-ultra.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -251,7 +250,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 38,
     images: [
-      { img_url: "uploads/products/galaxy-z-fold6.svg", sort_order: 1 },
+      { img_url: "uploads/products/galaxy-z-fold6.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -283,7 +282,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 140,
     images: [
-      { img_url: "uploads/products/sony-wh1000xm5.svg", sort_order: 1 },
+      { img_url: "uploads/products/sony-wh1000xm5.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -315,7 +314,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 210,
     images: [
-      { img_url: "uploads/products/airpods-pro-2.svg", sort_order: 1 },
+      { img_url: "uploads/products/airpods-pro-2.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -338,7 +337,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 48,
     images: [
-      { img_url: "uploads/products/apple-watch-ultra-2.svg", sort_order: 1 },
+      { img_url: "uploads/products/apple-watch-ultra-2.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -370,7 +369,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 32,
     images: [
-      { img_url: "uploads/products/galaxy-watch-ultra.svg", sort_order: 1 },
+      { img_url: "uploads/products/galaxy-watch-ultra.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -402,7 +401,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 29,
     images: [
-      { img_url: "uploads/products/asus-rog-zephyrus-g16.svg", sort_order: 1 },
+      { img_url: "uploads/products/asus-rog-zephyrus-g16.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -425,7 +424,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 22,
     images: [
-      { img_url: "uploads/products/dell-xps-14.svg", sort_order: 1 },
+      { img_url: "uploads/products/dell-xps-14.png", sort_order: 1 },
     ],
     variants: [
       {
@@ -457,7 +456,7 @@ const PRODUCTS = [
     status: 1,
     sold_count: 45,
     images: [
-      { img_url: "uploads/products/xiaomi-14-ultra.svg", sort_order: 1 },
+      { img_url: "uploads/products/xiaomi-14-ultra.png", sort_order: 1 },
     ],
     variants: [
       {

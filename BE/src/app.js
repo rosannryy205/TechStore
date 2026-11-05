@@ -77,7 +77,8 @@ app.use("/api/admin/products", adminProductRoutes);
 // Định nghĩa route cho quản lý thuộc tính biến thể
 app.use("/api/admin/variant-attributes", adminVariantAttributeRoutes);
 
-// Serve file tĩnh (ảnh/video của review) từ thư mục uploads
+// Serve file tĩnh (ảnh sản phẩm, brands, reviews) từ thư mục uploads
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Route mặc định để kiểm tra API

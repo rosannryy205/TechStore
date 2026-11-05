@@ -3,13 +3,13 @@ require('dotenv').config();
 
 //Khởi tạo kết nối Sequelize với cơ sở dữ liệu MySQL
 const sequelize = new Sequelize(
-    process.env.DB_NAME, // Tên cơ sở dữ liệu
-    process.env.DB_USER, // Tên người dùng
-    process.env.DB_PASSWORD, // Mật khẩu    
+    process.env.DB_NAME || 'pj26', // Tên cơ sở dữ liệu
+    process.env.DB_USER || 'root', // Tên người dùng
+    process.env.DB_PASSWORD !== undefined ? process.env.DB_PASSWORD : '', // Mật khẩu    
     {
-        host: process.env.DB_HOST,
-         port: process.env.DB_PORT,
-        dialect: process.env.DB_DIALECT
+        host: process.env.DB_HOST || 'localhost',
+        port: process.env.DB_PORT || 3306,
+        dialect: process.env.DB_DIALECT || 'mysql'
     }
 );
 

@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 // Thư mục lưu media của review.
-const uploadDir = path.join(__dirname, "..", "..", "uploads", "reviews");
+const uploadDir = path.join(__dirname, "..", "uploads", "reviews");
 
 // Tạo thư mục nếu chưa tồn tại.
 fs.mkdirSync(uploadDir, { recursive: true });
