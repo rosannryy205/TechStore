@@ -1,80 +1,73 @@
-import Banner from "@/components/banner";
-import Loading from "@/components/loading";
 import { SF_TEXT } from "@/constants/typography";
 import { useHomeProducts } from "@/hooks/client/useHomeProducts";
-import ProductGridSection from "@/components/client/home/productGridSection";
+import Hero3D from "@/components/client/home/Hero3D";
 import CategoryRibbon from "@/components/client/home/categoryRibbon";
-import HighlightSection from "@/components/client/home/highlightSection";
+import Interactive3DStudio from "@/components/client/home/Interactive3DStudio";
+import Bento3DGrid from "@/components/client/home/Bento3DGrid";
+import HighlightSection from "@/components/client/home/HighlightSection";
+import HomeSkeleton from "@/components/client/home/HomeSkeleton";
 
 export default function Home() {
   const { newArrivals, featured, popular, loading, error } = useHomeProducts();
 
+  // Stitch DESIGN.md rule 59 & 121: Skeletal shimmer matching exact layout dimensions, never circular spinners
   if (loading) {
-    return (
-      <section
-        className="w-full flex items-center justify-center"
-        style={{ fontFamily: SF_TEXT, minHeight: "60vh" }}
-      >
-        <Loading
-          variant="fullscreen"
-          size="medium"
-          text="Đang tải dữ liệu TechStore..."
-          shouldShow={true}
-          minDurationMs={500}
-          maxDurationMs={2000}
-        />
-      </section>
-    );
+    return <HomeSkeleton />;
   }
 
   return (
-    <main className="w-full" style={{ fontFamily: SF_TEXT }}>
-      {/* ─── TẦNG 1: HERO SHOWCASE ─── */}
-      <Banner />
+    <main
+      className="w-full bg-[#F9FAFB] text-[#18181B] flex flex-col overflow-x-hidden min-h-[100dvh]"
+      style={{ fontFamily: SF_TEXT }}
+    >
+      {/* ─── TẦNG 1: HERO 3D SHOWCASE (Asymmetric 50/50, Inline Image Typography, 3D Stage) ─── */}
+      <Hero3D />
 
-      {/* ─── TẦNG 2: CATEGORY QUICK-NAV RIBBON ─── */}
+      {/* ─── TẦNG 2: CATEGORY QUICK-NAV RIBBON (3D Tactile Capsule Buttons) ─── */}
       <CategoryRibbon />
 
-      {/* Error Notice (nếu có lỗi fetch) */}
+      {/* Contextual Error Notice if API fails */}
       {error && (
-        <div className="max-w-360 mx-auto px-4 py-3 my-4">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-            {error}
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 w-full my-6">
+          <div className="bg-white border-l-4 border-[#E11D48] text-[#18181B] p-4 rounded-2xl shadow-sm text-sm flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
+              <span className="text-[#71717A]">
+                Không thể đồng bộ dữ liệu trực tuyến ({error}). Đang hiển thị sản phẩm mẫu hệ thống.
+              </span>
+            </div>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-[12px] font-semibold text-[#3B82F6] hover:underline cursor-pointer"
+            >
+              Thử lại
+            </button>
           </div>
         </div>
       )}
 
-      {/* ─── TẦNG 3: FLAGSHIP SPOTLIGHT (KHỐI TỐI SANG TRỌNG #1d1d1f) ─── */}
-      <ProductGridSection
+      {/* ─── TẦNG 3: FLAGSHIP 3D STUDIO (Real-time Interactive 3D Rotation, Angles, Hotspots) ─── */}
+      <Interactive3DStudio />
+
+      {/* ─── TẦNG 4: BENTO 3D GRID - SẢN PHẨM MỚI & NỔI BẬT (Row 1: 2fr/1fr/1fr, Row 2: 70/30) ─── */}
+      <Bento3DGrid
         id="new-arrivals"
-        toneBg="#1d1d1f"
-        renderCardTone="dark"
-        title="Sản phẩm mới ra mắt"
-        subtitle="Đột phá công nghệ thế hệ mới — thiết kế nguyên khối tinh xảo, hiệu năng bứt phá mọi giới hạn."
-        items_product={newArrivals}
+        title="Thiết kế thế hệ mới. Đột phá công nghệ."
+        subtitle="Khám phá các thiết bị cao cấp với kiến trúc vi xử lý tiên phong và độ hoàn thiện tinh xảo."
+        items={newArrivals.length > 0 ? newArrivals : featured}
+        toneBg="#F9FAFB"
       />
 
-      {/* ─── TẦNG 4A: BENTO GRID - SẢN PHẨM NỔI BẬT (NỀN TRẮNG #ffffff) ─── */}
-      <ProductGridSection
-        id="featured"
-        toneBg="#ffffff"
-        renderCardTone="light"
-        title="Sản phẩm nổi bật"
-        subtitle="Lựa chọn hoàn hảo cho trải nghiệm đỉnh cao — màn hình sắc nét, camera chuẩn điện ảnh."
-        items_product={featured}
-      />
-
-      {/* ─── TẦNG 4B: BENTO GRID - SẢN PHẨM PHỔ BIẾN (NỀN GIẤY #f5f5f7) ─── */}
-      <ProductGridSection
+      {/* ─── TẦNG 5: BENTO 3D GRID - SẢN PHẨM BÁN CHẠY NHẤT ─── */}
+      <Bento3DGrid
         id="popular"
-        toneBg="#f5f5f7"
-        renderCardTone="parchment"
-        title="Sản phẩm bán chạy nhất"
-        subtitle="Được đông đảo khách hàng tin tưởng lựa chọn với mức giá tốt và chất lượng bền bỉ."
-        items_product={popular}
+        title="Sản phẩm được tin dùng nhất"
+        subtitle="Hệ sinh thái thiết bị được đông đảo người dùng công nghệ đánh giá cao về hiệu năng và độ tin cậy."
+        items={popular}
+        toneBg="#FFFFFF"
       />
 
-      {/* ─── TẦNG 5: TECHSTORE PERKS & TRADE-IN EDITORIAL BANNER ─── */}
+      {/* ─── TẦNG 6: TECHSTORE TRADE-IN & ĐẶC QUYỀN (2-Column Asymmetric Zig-Zag Layout) ─── */}
       <HighlightSection />
     </main>
   );

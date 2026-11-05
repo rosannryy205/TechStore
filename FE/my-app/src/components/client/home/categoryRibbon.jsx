@@ -1,9 +1,8 @@
 import { useEffect, useState, useMemo } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { categoryService } from "@/services/api/client/categoryService";
-import { SF_TEXT } from "@/constants/typography";
+import { SF_TEXT, MONO_TEXT } from "@/constants/typography";
 
-// Hệ sinh thái danh mục công nghệ chuẩn phong cách Apple
 const ECOSYSTEM_CATEGORIES = [
   {
     id: "all",
@@ -57,7 +56,7 @@ const ECOSYSTEM_CATEGORIES = [
 ];
 
 function CategoryIcon({ type }) {
-  const iconClass = "w-6 h-6 sm:w-7 sm:h-7 transition-transform duration-300 group-hover:scale-110";
+  const iconClass = "w-6 h-6 transition-transform duration-300 group-hover:scale-110";
 
   switch (type) {
     case "all":
@@ -151,12 +150,8 @@ export default function CategoryRibbon() {
     };
   }, []);
 
-  // Tổng hợp danh mục: Luôn có "Tất cả" ở đầu, tích hợp các category thực tế từ DB và bổ sung danh mục mẫu nếu DB chưa đủ
   const displayCategories = useMemo(() => {
-    // 1. Luôn có nút "Tất cả"
     const list = [ECOSYSTEM_CATEGORIES[0]];
-
-    // 2. Thêm các danh mục từ database
     const addedSlugs = new Set();
     dbCategories.forEach((cat) => {
       if (cat.slug) {
@@ -171,7 +166,6 @@ export default function CategoryRibbon() {
       }
     });
 
-    // 3. Nếu danh mục thực tế ít hơn 3, tự động bổ sung từ danh mục hệ sinh thái mẫu (tránh trùng slug)
     if (dbCategories.length < 3) {
       ECOSYSTEM_CATEGORIES.slice(1).forEach((ecoCat) => {
         if (!addedSlugs.has(ecoCat.slug.toLowerCase())) {
@@ -185,47 +179,56 @@ export default function CategoryRibbon() {
 
   return (
     <nav
-      aria-label="Dải danh mục sản phẩm nhanh"
-      className="w-full bg-[#fbfbfd] border-b border-[#e5e5e7] py-6 sm:py-8 overflow-hidden"
+      aria-label="Danh mục thiết bị công nghệ nhanh"
+      className="w-full bg-[#FFFFFF]/90 backdrop-blur-md border-b border-slate-200/60 py-6 sm:py-8 overflow-hidden select-none"
       style={{ fontFamily: SF_TEXT }}
     >
-      <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="flex items-center justify-start md:justify-center gap-6 sm:gap-10 lg:gap-12 overflow-x-auto no-scrollbar scroll-smooth py-2">
-          {displayCategories.map((cat) => {
-            // Xác định trạng thái active
-            const isActive = isProductsPage && (
-              cat.slug === "" ? !currentCate : currentCate.toLowerCase() === cat.slug.toLowerCase()
-            );
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+        <div className="flex items-center justify-start md:justify-center gap-4 sm:gap-8 lg:gap-10 overflow-x-auto no-scrollbar scroll-smooth py-2">
+          {displayCategories.map((cat, idx) => {
+            const isActive =
+              isProductsPage &&
+              (cat.slug === ""
+                ? !currentCate
+                : currentCate.toLowerCase() === cat.slug.toLowerCase());
 
             return (
               <Link
                 key={cat.id || cat.slug}
                 to={cat.href}
-                className="group flex flex-col items-center gap-2.5 shrink-0 no-underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2 rounded-2xl p-1"
+                className="group flex flex-col items-center gap-2.5 shrink-0 no-underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6] rounded-2xl p-1"
                 aria-label={`Xem danh mục ${cat.name}`}
               >
-                {/* ─── Apple Circular Capsule Button ─── */}
+                {/* 3D Tactile Spatial Glass Capsule Button */}
                 <div
                   className={[
-                    "w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all duration-300 ease-out",
+                    "w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ease-out preserve-3d will-change-transform",
                     isActive
-                      ? "bg-[#0066cc]/10 border-2 border-[#0066cc] text-[#0066cc] shadow-sm scale-105"
-                      : "bg-white border border-[#e5e5e7] text-[#1d1d1f] shadow-xs group-hover:-translate-y-1.5 group-hover:shadow-md group-hover:border-[#0066cc]/50 group-hover:text-[#0066cc]",
+                      ? "bg-[#18181B] text-white border border-[#18181B] shadow-md -translate-y-1"
+                      : "spatial-glass-pill-light text-[#18181B] group-hover:-translate-y-1.5 group-hover:shadow-[0_15px_30px_-6px_rgba(0,0,0,0.1)] group-hover:border-[#3B82F6]/50 group-hover:bg-white group-hover:text-[#3B82F6]",
                   ].join(" ")}
                 >
                   <CategoryIcon type={cat.iconType} />
                 </div>
 
-                {/* ─── Category Label ─── */}
+                {/* Category Label */}
                 <span
                   className={[
                     "text-[12px] sm:text-[13px] tracking-tight text-center whitespace-nowrap transition-colors duration-200",
                     isActive
-                      ? "font-semibold text-[#0066cc]"
-                      : "font-medium text-[#434344] group-hover:text-[#0066cc]",
+                      ? "font-bold text-[#18181B]"
+                      : "font-medium text-[#71717A] group-hover:text-[#18181B]",
                   ].join(" ")}
                 >
                   {cat.name}
+                </span>
+
+                {/* Micro Index Indicator in Geist Mono */}
+                <span
+                  className="text-[9px] text-[#94A3B8] font-mono opacity-0 group-hover:opacity-100 transition-opacity"
+                  style={{ fontFamily: MONO_TEXT }}
+                >
+                  0{idx + 1}
                 </span>
               </Link>
             );
