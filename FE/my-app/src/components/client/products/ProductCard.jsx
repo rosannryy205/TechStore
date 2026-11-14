@@ -43,11 +43,20 @@ export default function ProductCard({ product, tone }) {
             ƯU ĐÃI
           </span>
         )}
+        {/* Hết hàng vẫn được xem thông tin; không ẩn Product khỏi tập kết quả. */}
+        {product.isOutOfStock && (
+          <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs text-zinc-600">
+            Hết hàng
+          </span>
+        )}
       </div>
 
       {/* Product Image */}
       <div className="w-full flex justify-center items-center py-4 my-auto">
-        <Link to={targetHref} className="inline-block relative overflow-hidden group">
+        <Link
+          to={targetHref}
+          className="inline-block relative overflow-hidden group"
+        >
           <img
             src={imageUrl}
             alt={product.name}
@@ -63,7 +72,10 @@ export default function ProductCard({ product, tone }) {
 
       {/* Info Section */}
       <div className="mt-4 flex flex-col items-center">
-        <h3 className="text-[17px] sm:text-[19px] font-semibold leading-tight line-clamp-1 w-full" title={product.name}>
+        <h3
+          className="text-[17px] sm:text-[19px] font-semibold leading-tight line-clamp-1 w-full"
+          title={product.name}
+        >
           <Link
             to={targetHref}
             className={`no-underline hover:underline ${
@@ -113,7 +125,8 @@ export default function ProductCard({ product, tone }) {
           }`}
           title={product.tagline}
         >
-          {product.tagline || "Thiết kế sang trọng, hiệu năng vượt trội cho mọi nhu cầu."}
+          {product.tagline ||
+            "Thiết kế sang trọng, hiệu năng vượt trội cho mọi nhu cầu."}
         </p>
 
         {/* Dual Actions (Apple style) */}
@@ -126,7 +139,7 @@ export default function ProductCard({ product, tone }) {
                 : "bg-[#0066cc] text-white hover:bg-[#0071e3]"
             }`}
           >
-            Mua ngay
+            {product.isOutOfStock ? "Xem chi tiết" : "Mua ngay"}
           </Link>
 
           <Link

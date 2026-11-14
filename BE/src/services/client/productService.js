@@ -4,7 +4,6 @@ const {
   ProductVariant,
   Brand,
   ProductImage,
-  Category,
   VariantAttributeValue,
   VariantAttribute,
 } = require("../../models/index.js");
@@ -21,51 +20,7 @@ const VARIANT_INCLUDE = {
   include: buildAttributeInclude({ VariantAttributeValue, VariantAttribute }),
 };
 
-const getAllProducts = async (category_slug, brand_slug) => {
-  try {
-    const whereCondition = {};
-
-    // Nếu có truyền category_slug thì lọc theo category_id
-    if (category_slug) {
-      const category = await Category.findOne({
-        where: { slug: category_slug },
-      });
-
-      if (!category) return []; // Nếu slug category không tồn tại, trả về rỗng
-      whereCondition.category_id = category.id;
-    }
-
-    // Nếu có truyền brand_slug thì lọc theo brand_id
-    if (brand_slug) {
-      const brand = await Brand.findOne({
-        where: { slug: brand_slug },
-      });
-
-      if (!brand) return []; // Nếu slug brand không tồn tại, trả về rỗng
-      whereCondition.brand_id = brand.id;
-    }
-
-    const products = await Product.findAll({
-      where: whereCondition,
-      include: [
-        {
-          model: Brand,
-          as: "brand",
-        },
-        VARIANT_INCLUDE,
-        {
-          model: ProductImage,
-          as: "images",
-        },
-      ],
-      order: [["created_at", "DESC"]],
-    });
-
-    return transformProducts(products);
-  } catch (error) {
-    throw error;
-  }
-};
+const { getProductPage: getAllProducts } = require("./productSearchService");
 
 /**
  * getAllProductFeatures — Hỗ trợ pagination

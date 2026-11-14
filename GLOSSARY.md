@@ -25,16 +25,20 @@ Bảng tổ hợp Descartes sinh ra từ danh sách các Attribute Option đư�
 _Avoid_: Combination table, Product matrix
 
 **Starting Price**:
-Mức giá niêm yết thấp nhất được tính toán tự động từ tất cả các biến thể (Variant) khả dụng của một Product, hiển thị dưới dạng "Từ {giá}₫" trên trang chủ và danh sách sản phẩm.
+Mức giá bán thấp nhất của các Variant đang hoạt động và còn hàng thuộc một Product; nếu tất cả Variant đang hoạt động đều hết hàng, lấy mức thấp nhất trong các Variant đang hoạt động. Giá bán dùng giá khuyến mãi hợp lệ nếu có, nếu không dùng giá niêm yết.
 _Avoid_: Base price, Minimum price
 
 **Promotional Product**:
-Sản phẩm có ít nhất một Variant đang áp dụng giá khuyến mãi hợp lệ (sale_price > 0 và sale_price < price), được gắn cờ hasSale và hiển thị nhãn "ƯU ĐÃI".
+Sản phẩm có ít nhất một Variant đang hoạt động áp dụng giá khuyến mãi lớn hơn 0 và thấp hơn giá niêm yết, kể cả khi Variant đó đã hết hàng.
 _Avoid_: Discounted good, Sale item, Deal product
 
 **Product Filter**:
 Tập hợp các tiêu chí lọc và sắp xếp đa chiều (Danh mục, Thương hiệu, Khoảng giá Starting Price, Trạng thái khuyến mãi) trên trang danh sách sản phẩm, đồng bộ 2 chiều với URL Search Parameters.
 _Avoid_: Product searcher, Query filter, Search facet
+
+**Product Search**:
+Tra cứu Product bằng từ khóa dành cho người mua; mỗi Product xuất hiện tối đa một lần trong tập kết quả dù có nhiều Variant.
+_Avoid_: Variant search, Product Filter (khi nói về tra cứu bằng từ khóa)
 
 **Cart**:
 Giỏ hàng trực tuyến lưu trữ trên hệ thống, gắn liền với tài khoản người dùng đã đăng nhập, lưu trữ danh sách các Variant và số lượng chọn mua.

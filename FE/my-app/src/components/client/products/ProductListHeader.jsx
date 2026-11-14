@@ -5,10 +5,11 @@ import {
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
-import { SORT_OPTIONS, PRICE_RANGES } from "@/hooks/client/useProducts";
+import { SORT_OPTIONS, PRICE_RANGES } from "@/constants/productFilters";
 
 export default function ProductListHeader({
   count = 0,
+  activeQuery = "",
   categories = [],
   activeCategory = "",
   activeBrand = "",
@@ -52,7 +53,7 @@ export default function ProductListHeader({
       <div className="text-center max-w-2xl mx-auto mb-8">
         <div className="inline-flex items-center gap-2 rounded-full bg-[#f5f5f7] border border-[#e5e5e7] px-3.5 py-1.5 mb-4">
           <span className="text-[11px] font-bold tracking-wider text-[#6e6e73] uppercase">
-            DANH MỤC
+            {activeQuery ? "TÌM KIẾM" : "DANH MỤC"}
           </span>
           <span className="w-1 h-1 rounded-full bg-[#86868b]" />
           <span className="text-[13px] font-medium text-[#1d1d1f]">
@@ -64,10 +65,11 @@ export default function ProductListHeader({
           className="text-[32px] sm:text-[40px] lg:text-[44px] font-semibold text-[#1d1d1f] tracking-tight leading-tight"
           style={{ fontFamily: SF_DISPLAY }}
         >
-          {currentCategoryName}
+          {activeQuery ? `Kết quả cho “${activeQuery}”` : currentCategoryName}
         </h1>
         <p className="mt-2 text-[15px] sm:text-[17px] text-[#6e6e73] leading-relaxed">
-          Trải nghiệm công nghệ thế hệ mới — thiết kế nguyên khối tinh tế cùng hiệu năng dẫn đầu.
+          Trải nghiệm công nghệ thế hệ mới — thiết kế nguyên khối tinh tế cùng
+          hiệu năng dẫn đầu.
         </p>
       </div>
 
@@ -91,13 +93,18 @@ export default function ProductListHeader({
           </button>
 
           <span className="text-[14px] text-[#6e6e73]">
-            Hiển thị <strong className="text-[#1d1d1f] font-semibold">{count}</strong> sản phẩm
+            Hiển thị{" "}
+            <strong className="text-[#1d1d1f] font-semibold">{count}</strong>{" "}
+            sản phẩm
           </span>
         </div>
 
         {/* Sắp xếp dropdown */}
         <div className="flex items-center gap-2 self-end sm:self-auto">
-          <label htmlFor="product-sort-select" className="text-[13px] text-[#6e6e73] whitespace-nowrap">
+          <label
+            htmlFor="product-sort-select"
+            className="text-[13px] text-[#6e6e73] whitespace-nowrap"
+          >
             Sắp xếp theo:
           </label>
           <div className="relative">
@@ -121,7 +128,9 @@ export default function ProductListHeader({
       {/* ─── ACTIVE FILTER CHIPS (Thẻ lọc đang áp dụng) ─── */}
       {activeCount > 0 && (
         <div className="flex flex-wrap items-center gap-2 pt-3">
-          <span className="text-[12px] font-medium text-[#86868b]">Đang lọc:</span>
+          <span className="text-[12px] font-medium text-[#86868b]">
+            Đang lọc:
+          </span>
 
           {activeCategory && activeCategory !== "all" && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#f0f7ff] border border-[#0066cc]/20 text-[#0066cc] text-[12px] font-medium">
@@ -184,7 +193,7 @@ export default function ProductListHeader({
             onClick={onResetAll}
             className="text-[12px] font-medium text-[#6e6e73] hover:text-[#0066cc] hover:underline ml-1 cursor-pointer transition-colors"
           >
-            Xóa tất cả
+            Xóa bộ lọc
           </button>
         </div>
       )}

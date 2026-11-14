@@ -4,15 +4,15 @@ import { SF_TEXT } from "@/constants/typography";
 export default function ProductPagination({ page, totalPages, onPageChange }) {
   if (totalPages <= 1) return null;
 
-  // Xây dựng danh sách các số trang cần hiển thị
+  // Chỉ xét tối đa 5 số trang, tránh lặp toàn bộ totalPages khi catalog lớn.
   const pages = [];
-  for (let i = 1; i <= totalPages; i++) {
-    // Chỉ hiển thị trang đầu, trang cuối, và các trang lân cận trang hiện tại
-    if (i === 1 || i === totalPages || (i >= page - 1 && i <= page + 1)) {
-      pages.push(i);
-    } else if (pages[pages.length - 1] !== "...") {
-      pages.push("...");
-    }
+  const candidates = [...new Set([1, totalPages, page - 1, page, page + 1])]
+    .filter((value) => value >= 1 && value <= totalPages)
+    .sort((a, b) => a - b);
+  for (const value of candidates) {
+    const previous = pages[pages.length - 1];
+    if (typeof previous === "number" && value - previous > 1) pages.push("...");
+    pages.push(value);
   }
 
   const handlePageSelect = (p) => {

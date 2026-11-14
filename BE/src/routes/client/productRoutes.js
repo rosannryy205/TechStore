@@ -6,11 +6,15 @@ const {
   getAllProductPopular,
   getAllProductNewArrival,
   getProductById,
-  getProductRelated
+  getProductRelated,
 } = require("../../controllers/client/productController");
 
 // Định nghĩa route để lấy tất cả sản phẩm
-router.get("/", getAllProducts);
+router.get(
+  "/",
+  require("../../validators/productValidators").listProductRules(),
+  getAllProducts,
+);
 // Định nghĩa route để lấy các tính năng nổi bật của sản phẩm
 router.get("/features", getAllProductFeatures);
 // Định nghĩa route để lấy các sản phẩm phổ biến
