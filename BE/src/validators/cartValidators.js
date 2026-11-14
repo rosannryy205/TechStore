@@ -1,4 +1,4 @@
-const { body, param, validationResult } = require("express-validator");
+const { check, body, validationResult } = require("express-validator");
 
 /**
  * Middleware kiểm tra kết quả validation
@@ -33,15 +33,15 @@ const addToCartRules = () => [
 
   body("quantity")
     .optional()
-    .isInt({ min: 1 })
-    .withMessage("Quantity must be at least 1"),
+    .isInt({ min: 1, max: 100 })
+    .withMessage("Quantity must be between 1 and 100"),
 ];
 
 /**
- * Validation rules cho PUT /api/cart/items (update quantity)
+ * Validation rules cho PUT /api/cart/items (hoặc /api/cart/items/:variantId)
  */
 const updateCartRules = () => [
-  body("variantId")
+  check("variantId")
     .notEmpty()
     .withMessage("Variant ID is required")
     .isInt({ min: 1 })
@@ -50,15 +50,15 @@ const updateCartRules = () => [
   body("quantity")
     .notEmpty()
     .withMessage("Quantity is required")
-    .isInt({ min: 1 })
-    .withMessage("Quantity must be at least 1"),
+    .isInt({ min: 1, max: 100 })
+    .withMessage("Quantity must be between 1 and 100"),
 ];
 
 /**
- * Validation rules cho DELETE /api/cart/items (remove item)
+ * Validation rules cho DELETE /api/cart/items (hoặc /api/cart/items/:variantId)
  */
 const removeCartRules = () => [
-  body("variantId")
+  check("variantId")
     .notEmpty()
     .withMessage("Variant ID is required")
     .isInt({ min: 1 })

@@ -5,17 +5,15 @@ const OrderItemsModel = sequelize.define(
   "order_items",
   {
     order_id: {
-      type: DataTypes.BIGINT,
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     product_variant_id: {
-      type: DataTypes.BIGINT,
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     price: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
     quantity: {
@@ -23,7 +21,7 @@ const OrderItemsModel = sequelize.define(
       allowNull: true,
     },
     total: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
   },

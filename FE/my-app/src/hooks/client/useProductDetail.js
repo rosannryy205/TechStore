@@ -69,7 +69,11 @@ export function useProductDetail() {
 
     const found = productVariants.find((v) => {
       if (v.attributeValues && v.attributeValues.length > 0) {
-        for (const [key, value] of Object.entries(selected)) {
+        const selectedEntries = Object.entries(selected);
+        // Đảm bảo đã chọn đủ số chiều thuộc tính của sản phẩm
+        if (selectedEntries.length !== v.attributeValues.length) return false;
+
+        for (const [key, value] of selectedEntries) {
           const match = v.attributeValues.some(
             (av) => av.attribute?.name === key && av.value === value
           );
@@ -77,7 +81,9 @@ export function useProductDetail() {
         }
         return true;
       }
-      for (const [key, value] of Object.entries(selected)) {
+      const selectedEntries = Object.entries(selected);
+      if (selectedEntries.length === 0) return false;
+      for (const [key, value] of selectedEntries) {
         if (v[key] !== value) return false;
       }
       return true;
@@ -250,6 +256,15 @@ export function useProductDetail() {
       setNotification({
         type: "error",
         message: "Vui lòng chọn biến thể sản phẩm hợp lệ.",
+      });
+      isPostingRef.current = false;
+      return;
+    }
+
+    if (typeof selectedVariant.stock === "number" && selectedVariant.stock <= 0) {
+      setNotification({
+        type: "error",
+        message: "Sản phẩm phiên bản này hiện đã hết hàng.",
       });
       isPostingRef.current = false;
       return;

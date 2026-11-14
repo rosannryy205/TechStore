@@ -30,8 +30,22 @@ router.put(
   handleValidationErrors,
   updateCartItemController,
 );
+router.put(
+  "/items/:variantId",
+  requireAuth,
+  updateCartRules(),
+  handleValidationErrors,
+  updateCartItemController,
+);
 router.delete(
   "/items",
+  requireAuth,
+  removeCartRules(),
+  handleValidationErrors,
+  removeCartItemController,
+);
+router.delete(
+  "/items/:variantId",
   requireAuth,
   removeCartRules(),
   handleValidationErrors,
