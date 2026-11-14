@@ -2,7 +2,7 @@ $kind: http-request
 name: 'Get All Products'
 order: 1000
 method: GET
-url: 'http://localhost:3000/api/products'
+url: 'http://localhost:3000/api/products?page=1&limit=12&sort=newest'
 scripts:
   - type: afterResponse
     language: text/javascript
@@ -21,7 +21,21 @@ scripts:
         const hasData = json.data || json.products || Array.isArray(json);
         pm.expect(hasData).to.be.ok;
       });
-      // Save first product id for later tests
+      pm.test("Metadata phân trang đúng theo Product", function () {
+        const result = pm.response.json();
+        pm.expect(result.success).to.equal(true);
+        pm.expect(result.data).to.be.an("array");
+        pm.expect(result.data.length).to.be.at.most(result.limit);
+        pm.expect(result.total).to.be.a("number");
+        pm.expect(result.totalPages).to.equal(Math.max(1, Math.ceil(result.total / result.limit)));
+        pm.expect(new Set(result.data.map(product => product.id)).size).to.equal(result.data.length);
+        result.data.forEach(product => {
+          pm.expect(product.minPrice).to.be.a("number");
+          pm.expect(product.hasSale).to.be.a("boolean");
+          pm.expect(product.isOutOfStock).to.be.a("boolean");
+        });
+      });
+      // Giữ Product/Variant đầu tiên để các request tiếp theo sử dụng.
       const json = pm.response.json();
       const products = json.data || json.products || (Array.isArray(json) ? json : null);
       if (products && products.length > 0) {

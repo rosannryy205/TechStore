@@ -6,7 +6,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { SF_TEXT, SF_DISPLAY } from "@/constants/typography";
-import { PRICE_RANGES } from "@/hooks/client/useProducts";
+import { PRICE_RANGES } from "@/constants/productFilters";
 
 function FilterContent({
   categories = [],

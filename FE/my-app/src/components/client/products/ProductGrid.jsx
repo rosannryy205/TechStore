@@ -1,8 +1,16 @@
-import { MagnifyingGlassIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
+} from "@heroicons/react/24/outline";
 import { SF_TEXT, SF_DISPLAY } from "@/constants/typography";
-import ProductCard from "./productCard";
+import ProductCard from "./ProductCard";
 
-export default function ProductGrid({ products = [], onResetFilters }) {
+export default function ProductGrid({
+  products = [],
+  onResetFilters,
+  onClearQuery,
+  query = "",
+}) {
   if (products.length === 0) {
     return (
       <div
@@ -21,9 +29,20 @@ export default function ProductGrid({ products = [], onResetFilters }) {
         </h3>
 
         <p className="text-[14px] sm:text-[15px] text-[#6e6e73] max-w-md mx-auto mb-6 leading-relaxed">
-          Rất tiếc, không có sản phẩm nào thỏa mãn toàn bộ tiêu chí lọc bạn đã chọn. Hãy thử thay đổi mức giá hoặc danh mục.
+          {query
+            ? `Không có sản phẩm phù hợp với từ khóa “${query}” và các bộ lọc hiện tại.`
+            : "Không có sản phẩm nào thỏa mãn các bộ lọc hiện tại."}
         </p>
 
+        {onClearQuery && (
+          <button
+            type="button"
+            onClick={onClearQuery}
+            className="mb-3 rounded-full border border-blue-600 px-6 py-2.5 text-sm text-blue-700"
+          >
+            Xóa từ khóa
+          </button>
+        )}
         {onResetFilters && (
           <button
             type="button"
