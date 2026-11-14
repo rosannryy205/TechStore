@@ -1,15 +1,15 @@
 import { useState } from "react";
-import Loading from "@/components/loading";
 import { SF_TEXT } from "@/constants/typography";
 import { useProducts } from "@/hooks/client/useProducts";
-import ProductListHeader from "@/components/client/products/productListHeader";
+import ProductListHeader from "@/components/client/products/ProductListHeader";
 import ProductFilter from "@/components/client/products/productFilter";
-import ProductGrid from "@/components/client/products/productGrid";
-import ProductPagination from "@/components/client/products/productPagination";
+import ProductGrid from "@/components/client/products/ProductGrid";
+import ProductPagination from "@/components/client/products/ProductPagination";
+import ProductSearchForm from "@/components/client/search/productSearchForm";
 
+/** Giữ form/filter khi tải hoặc lỗi; chỉ vùng kết quả thay đổi theo request. */
 export default function Products() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
-
   const {
     pageItems,
     loading,
@@ -18,6 +18,8 @@ export default function Products() {
     totalPages,
     totalCount,
     categories,
+    categoryError,
+    activeQuery,
     activeCategory,
     activeBrand,
     activePrice,
@@ -26,55 +28,20 @@ export default function Products() {
     activeFiltersCount,
     setFilter,
     resetFilters,
+    clearQuery,
     setPage,
+    retry,
   } = useProducts();
 
-  if (loading) {
-    return (
-      <section
-        className="w-full flex items-center justify-center bg-white"
-        style={{ fontFamily: SF_TEXT, minHeight: "65vh" }}
-      >
-        <Loading
-          variant="fullscreen"
-          size="medium"
-          text="Đang tải danh sách sản phẩm..."
-          shouldShow={true}
-          minDurationMs={400}
-          maxDurationMs={2000}
-        />
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <main className="w-full bg-white py-16" style={{ fontFamily: SF_TEXT }}>
-        <div className="max-w-360 mx-auto px-4">
-          <div className="p-8 bg-red-50 border border-red-200 text-center rounded-2xl">
-            <h3 className="text-red-800 font-semibold text-lg mb-2">
-              Đã xảy ra lỗi
-            </h3>
-            <p className="text-red-600 text-sm mb-4">{error}</p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className="px-5 py-2 rounded-full bg-red-600 text-white text-sm font-medium hover:bg-red-700 cursor-pointer"
-            >
-              Tải lại trang
-            </button>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
-    <main className="w-full bg-[#fbfbfd] min-h-screen" style={{ fontFamily: SF_TEXT }}>
-      <div className="mx-auto max-w-360 px-4 sm:px-6 lg:px-10 py-8 lg:py-12">
-        {/* Header với tiêu đề, breadcrumbs, search count và sort */}
+    <main
+      className="min-h-screen w-full bg-[#fbfbfd]"
+      style={{ fontFamily: SF_TEXT }}
+    >
+      <div className="mx-auto max-w-360 px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
         <ProductListHeader
-          count={totalCount}
+          count={loading ? "…" : totalCount}
+          activeQuery={activeQuery}
           categories={categories}
           activeCategory={activeCategory}
           activeBrand={activeBrand}
@@ -83,14 +50,31 @@ export default function Products() {
           activeSort={activeSort}
           activeCount={activeFiltersCount}
           onOpenMobileFilter={() => setIsMobileFilterOpen(true)}
-          onSortChange={(sortId) => setFilter("sort", sortId)}
-          onRemoveFilter={(key) => setFilter(key, "all")}
+          onSortChange={(id) => setFilter("sort", id)}
+          onRemoveFilter={(key) =>
+            setFilter(key, key === "sale" ? false : "all")
+          }
           onResetAll={resetFilters}
         />
-
-        {/* Khung nội dung chính: Sidebar Lọc + Lưới sản phẩm */}
-        <div className="flex gap-8 items-start">
-          {/* Bộ lọc Desktop & Mobile Drawer */}
+        {/* key chỉ đổi khi q đã submit/Back; khách vẫn gõ tiếp được khi đổi filter. */}
+        <ProductSearchForm
+          key={activeQuery}
+          initialQuery={activeQuery}
+          onSearch={(query) => setFilter("q", query)}
+          onClear={clearQuery}
+        />
+        {categoryError && (
+          <div
+            role="alert"
+            className="mb-4 rounded-xl bg-amber-50 p-4 text-sm text-amber-900"
+          >
+            {categoryError}{" "}
+            <button type="button" onClick={retry} className="underline">
+              Thử lại
+            </button>
+          </div>
+        )}
+        <div className="flex items-start gap-8">
           <ProductFilter
             categories={categories}
             activeCategory={activeCategory}
@@ -100,25 +84,49 @@ export default function Products() {
             activeCount={activeFiltersCount}
             onSelectCategory={(slug) => setFilter("cate", slug)}
             onSelectBrand={(slug) => setFilter("brand", slug)}
-            onSelectPrice={(priceId) => setFilter("price", priceId)}
-            onToggleSale={(val) => setFilter("sale", val)}
+            onSelectPrice={(id) => setFilter("price", id)}
+            onToggleSale={(value) => setFilter("sale", value)}
             onReset={resetFilters}
             isMobileOpen={isMobileFilterOpen}
             onCloseMobile={() => setIsMobileFilterOpen(false)}
           />
-
-          {/* Lưới sản phẩm & Phân trang */}
-          <div className="flex-1 min-w-0">
-            <ProductGrid
-              products={pageItems}
-              onResetFilters={resetFilters}
-            />
-
-            <ProductPagination
-              page={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-            />
+          <div className="min-w-0 flex-1" aria-busy={loading}>
+            {loading ? (
+              <div
+                role="status"
+                className="flex min-h-64 items-center justify-center text-zinc-600"
+              >
+                Đang tải sản phẩm…
+              </div>
+            ) : error ? (
+              <div
+                role="alert"
+                className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-red-800"
+              >
+                <p>{error}</p>
+                <button
+                  type="button"
+                  onClick={retry}
+                  className="mt-4 rounded-full bg-red-700 px-5 py-2 text-white"
+                >
+                  Thử lại
+                </button>
+              </div>
+            ) : (
+              <>
+                <ProductGrid
+                  products={pageItems}
+                  query={activeQuery}
+                  onClearQuery={activeQuery ? clearQuery : undefined}
+                  onResetFilters={activeFiltersCount ? resetFilters : undefined}
+                />
+                <ProductPagination
+                  page={page}
+                  totalPages={totalPages}
+                  onPageChange={setPage}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>

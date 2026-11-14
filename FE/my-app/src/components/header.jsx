@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import ProductSearchOverlay from "@/components/client/search/productSearchOverlay";
+import { useState, useEffect, useCallback } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuthModal } from "../contexts/authModalContext";
 import { useAuth } from "../contexts/authContext";
 import { cartService } from "@/services/api/client/cartService";
@@ -123,113 +124,7 @@ function ChevronDown({ className = "" }) {
   );
 }
 
-/* ─── SEARCH OVERLAY (White Canvas / Gallery-Airy Architectural Glass Modal) ─── */
-function SearchOverlay({ open, onClose }) {
-  const [query, setQuery] = useState("");
-  const inputRef = useRef(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (open && inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [open]);
-
-  useEffect(() => {
-    function handleKey(e) {
-      if (e.key === "Escape") onClose();
-    }
-    if (open) document.addEventListener("keydown", handleKey);
-    return () => document.removeEventListener("keydown", handleKey);
-  }, [open, onClose]);
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (!query.trim()) return;
-    onClose();
-    navigate(`/products?q=${encodeURIComponent(query.trim())}`);
-  };
-
-  return (
-    <div
-      className={`fixed inset-0 z-60 transition-opacity duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-        open
-          ? "opacity-100 pointer-events-auto"
-          : "opacity-0 pointer-events-none"
-      }`}
-    >
-      {/* Soft Dimmed Backdrop */}
-      <div
-        className="absolute inset-0 bg-[#18181B]/40 backdrop-blur-md"
-        onClick={onClose}
-      />
-
-      {/* Pure Surface Modal Card - Rule 56: 2.5rem radius, whisper border, diffused shadow */}
-      <div
-        className={`relative z-10 max-w-[720px] mx-auto mt-24 px-4 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          open ? "translate-y-0 opacity-100 scale-100" : "-translate-y-6 opacity-0 scale-98"
-        }`}
-      >
-        <div className="bg-white/95 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 border border-zinc-200/80 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)]">
-          <form
-            onSubmit={handleSearchSubmit}
-            className="flex items-center gap-3.5 pb-4 border-b border-zinc-100"
-          >
-            <SearchIcon className="text-[#3B82F6] shrink-0" />
-            <input
-              ref={inputRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Tìm kiếm sản phẩm, phụ kiện hoặc công nghệ..."
-              className="w-full bg-transparent text-[#18181B] text-[16px] placeholder:text-[#94A3B8] outline-none border-none font-normal"
-              style={{ fontFamily: SF_TEXT }}
-            />
-            <button
-              type="button"
-              onClick={onClose}
-              className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-[#71717A] hover:text-[#18181B] hover:bg-zinc-100 transition-colors cursor-pointer"
-              aria-label="Đóng tìm kiếm"
-            >
-              <CloseIcon />
-            </button>
-          </form>
-
-          {/* Quick Filter Tags */}
-          <div className="mt-6 text-left">
-            <p
-              className="text-[#71717A] text-[12px] font-medium tracking-wide mb-3"
-              style={{ fontFamily: SF_TEXT }}
-            >
-              Gợi ý tìm kiếm phổ biến
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                "iPhone 18 Pro Max",
-                "MacBook Pro M3 Max",
-                "iPad Pro M4",
-                "Apple Watch Ultra 2",
-                "AirPods Max",
-              ].map((term) => (
-                <Link
-                  key={term}
-                  to={`/products?q=${encodeURIComponent(term)}`}
-                  onClick={onClose}
-                  className="inline-flex items-center px-4 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200/80 border border-zinc-200/60 text-[13px] text-[#3F3F46] hover:text-[#18181B] transition-all no-underline"
-                  style={{ fontFamily: SF_TEXT }}
-                >
-                  {term}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─── MOBILE ACCORDION ITEM ─── */
+/* Nhóm danh mục mở/đóng trong menu mobile; hộp tìm kiếm đã được tách riêng. */
 function MobileAccordion({ item, onNavigate }) {
   const [open, setOpen] = useState(false);
 
@@ -287,6 +182,7 @@ function MobileAccordion({ item, onNavigate }) {
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
   const [scrolled, setScrolled] = useState(false);
 
   const { openLogin } = useAuthModal();
@@ -309,7 +205,7 @@ export default function Header() {
       const items = await cartService.getCart();
       const total = items.reduce(
         (acc, it) => acc + Number(it.quantity ?? 0),
-        0
+        0,
       );
       setCartCount(total);
     } catch {
@@ -345,7 +241,7 @@ export default function Header() {
     fetchCategories();
   }, []);
 
-  /* 
+  /*
    * Rule 98 Hardware Motion Rules:
    * Maintain stable height (CLS = 0), animate ONLY opacity/background via requestAnimationFrame.
    */
@@ -499,7 +395,7 @@ export default function Header() {
                                 <Link
                                   key={brand?.slug || cb.id}
                                   to={`/products?brand=${encodeURIComponent(
-                                    brand?.slug
+                                    brand?.slug,
                                   )}&cate=${encodeURIComponent(cate.slug)}`}
                                   className="group/b flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-zinc-50/70 hover:bg-zinc-100/90 border border-zinc-200/50 hover:border-zinc-300/80 text-[#27272A] hover:text-[#18181B] text-[13px] font-medium transition-all duration-200 no-underline active:scale-[0.98]"
                                 >
@@ -709,7 +605,7 @@ export default function Header() {
                     ? cat.category_brands.map((cb) => ({
                         label: cb.brand?.name || "Chính hãng",
                         href: `/products?brand=${encodeURIComponent(
-                          cb.brand?.slug
+                          cb.brand?.slug,
                         )}&cate=${encodeURIComponent(cat.slug)}`,
                       }))
                     : undefined,
@@ -750,7 +646,7 @@ export default function Header() {
       </div>
 
       {/* Search Overlay Modal */}
-      <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen && <ProductSearchOverlay onClose={closeSearch} />}
     </>
   );
 }

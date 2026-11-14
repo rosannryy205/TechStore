@@ -9,9 +9,9 @@ const {
 
 const getAllProductsController = async (req, res, next) => {
   try {
-    const { category, brand } = req.query;
-    const products = await getAllProducts(category, brand);
-    return res.status(200).json({ success: true, data: products });
+    // Controller chỉ chuyển query đã kiểm tra; giá/lọc/count thuộc Service.
+    const result = await getAllProducts(res.locals.productQuery);
+    return res.status(200).json({ success: true, ...result });
   } catch (error) {
     next(error);
   }

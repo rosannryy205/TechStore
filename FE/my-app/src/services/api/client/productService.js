@@ -16,14 +16,18 @@ export const productService = {
     return res?.data ?? [];
   },
 
-  getProducts: async ({ category, brand }) => {
+  // Giữ metadata của BE; signal cho phép hủy tìm kiếm khi khách đổi query/đóng hộp.
+  getProducts: async (criteria = {}, { signal } = {}) => {
     const query = new URLSearchParams();
-    if (category) query.set("category", category);
-    if (brand) query.set("brand", brand);
+    for (const [key, value] of Object.entries(criteria)) {
+      if (value !== "" && value !== undefined && value !== null)
+        query.set(key, String(value));
+    }
     const queryString = query.toString();
-    const endpoint = queryString ? `/api/products/?${queryString}` : "/api/products/";
-    const res = await httpRequest(endpoint);
-    return res?.data ?? [];
+    const endpoint = queryString
+      ? `/api/products/?${queryString}`
+      : "/api/products/";
+    return httpRequest(endpoint, { signal });
   },
 
   getProductDetail: async (id) => {

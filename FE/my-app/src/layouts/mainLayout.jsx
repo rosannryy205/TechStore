@@ -18,6 +18,9 @@ const MAX_DURATION_MS = 1500;
 
 export default function MainLayout() {
   const location = useLocation();
+  // Trang products tự quản lý loading vùng kết quả; đổi query không được gỡ Outlet.
+  const isProductsPage = location.pathname === "/products";
+  const routeSearch = isProductsPage ? "" : location.search;
 
   const [shouldShow, setShouldShow] = React.useState(false);
   const showTimerRef = React.useRef(null);
@@ -42,9 +45,9 @@ export default function MainLayout() {
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
-  }, [location.pathname, location.search]);
+  }, [location.pathname, routeSearch]);
 
-  const gateOutlet = !shouldShow;
+  const gateOutlet = isProductsPage || !shouldShow;
 
   return (
     <>
@@ -54,7 +57,7 @@ export default function MainLayout() {
         variant="fullscreen"
         size="medium"
         text="Loading..."
-        shouldShow={shouldShow}
+        shouldShow={!isProductsPage && shouldShow}
         minDurationMs={MIN_DURATION_MS}
         maxDurationMs={MAX_DURATION_MS}
       />
