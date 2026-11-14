@@ -5,12 +5,10 @@ const OrderModel = sequelize.define(
   "orders",
   {
     user_id: {
-      type: DataTypes.BIGINT,
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     discount_id: {
-      type: DataTypes.BIGINT,
       type: DataTypes.INTEGER,
       allowNull: true,
     },
@@ -35,19 +33,19 @@ const OrderModel = sequelize.define(
       allowNull: true,
     },
     subtotal: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
     shipping_fee: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
     discount_amount: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
     total_amount: {
-      type: DataTypes.DECIMAL(10, 2),
+      type: DataTypes.DECIMAL(15, 2),
       allowNull: true,
     },
     payment_method: {

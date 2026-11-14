@@ -40,16 +40,44 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
   const qty = Number(quantity);
 
   return sequelize.transaction(async (t) => {
-    // validate variant tồn tại + trạng thái (nếu cần)
+    // validate variant tồn tại + trạng thái + tồn kho
     const variant = await ProductVariant.findOne({
       where: { id: variantId, product_id: productId },
-      attributes: ["id", "price", "sale_price", "stock"],
+      attributes: ["id", "price", "sale_price", "stock", "status"],
+      include: [
+        {
+          model: Product,
+          as: "product",
+          attributes: ["id", "name", "status"],
+          required: false,
+        },
+      ],
       transaction: t,
     });
 
     if (!variant) {
       const err = new Error("Variant not found");
       err.statusCode = 404;
+      throw err;
+    }
+
+    if (variant.status === 0 || (variant.product && variant.product.status === 0)) {
+      const err = new Error("Sản phẩm hoặc biến thể này đã ngừng kinh doanh");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (variant.stock <= 0) {
+      const err = new Error("Sản phẩm này hiện đã hết hàng");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (qty > variant.stock) {
+      const err = new Error(
+        `Số lượng yêu cầu (${qty}) vượt quá tồn kho hiện có (${variant.stock})`
+      );
+      err.statusCode = 400;
       throw err;
     }
 
@@ -72,7 +100,15 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
     // findOrCreate trả item hiện tại nếu đã tồn tại
     // Khi đó cần cộng thêm quantity
     if (!created) {
-      item.quantity = item.quantity + qty;
+      const newTotalQty = item.quantity + qty;
+      if (newTotalQty > variant.stock) {
+        const err = new Error(
+          `Tổng số lượng trong giỏ (${newTotalQty}) vượt quá tồn kho hiện có (${variant.stock})`
+        );
+        err.statusCode = 400;
+        throw err;
+      }
+      item.quantity = newTotalQty;
       await item.save({ transaction: t, fields: ["quantity"] });
     }
 
@@ -93,6 +129,7 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
             "price",
             "sale_price",
             "stock",
+            "status",
           ],
           include: [
             ...buildAttributeInclude({
@@ -104,7 +141,7 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
             {
               model: Product,
               as: "product",
-              attributes: ["name", "id"],
+              attributes: ["name", "id", "status"],
               required: false,
               include: [
                 {
@@ -128,12 +165,23 @@ async function addToCart({ userId, productId, variantId, quantity = 1 }) {
       const plain = it.get({ plain: true });
       // Flatten dynamic attributes cho backward compatibility (variant.color, etc.)
       if (plain.variant) flattenAttributes(plain.variant);
+
+      const variant = plain.variant;
+      const product = variant?.product;
+      const isAvailable = Boolean(
+        variant &&
+        variant.status === 1 &&
+        (!product || product.status === 1) &&
+        variant.stock > 0
+      );
+
       return {
         ...plain,
         // Contract cho FE: FE cần `variant.product_id` khi map.
         // Đồng thời giữ `variant_id` ở cấp item.
         variant_id: it.product_variant_id,
-        product: plain.variant?.product || {},
+        product: product || {},
+        isAvailable,
       };
     });
 
@@ -178,6 +226,7 @@ async function getCartByUser(userId) {
           "price",
           "sale_price",
           "stock",
+          "status",
         ],
         include: [
           ...buildAttributeInclude({
@@ -187,7 +236,7 @@ async function getCartByUser(userId) {
           {
             model: Product,
             as: "product",
-            attributes: ["name", "id"],
+            attributes: ["name", "id", "status"],
             required: false,
             include: [
               {
@@ -209,10 +258,21 @@ async function getCartByUser(userId) {
     const plain = it.get({ plain: true });
     // Flatten dynamic attributes cho backward compatibility (variant.color, etc.)
     if (plain.variant) flattenAttributes(plain.variant);
+
+    const variant = plain.variant;
+    const product = variant?.product;
+    const isAvailable = Boolean(
+      variant &&
+      variant.status === 1 &&
+      (!product || product.status === 1) &&
+      variant.stock > 0
+    );
+
     return {
       ...plain,
       variant_id: it.product_variant_id,
-      product: plain.variant?.product || {},
+      product: product || {},
+      isAvailable,
     };
   });
 
@@ -255,6 +315,40 @@ async function updateCartItemQuantity({ userId, variantId, quantity }) {
     if (!item) {
       const err = new Error("Cart item not found");
       err.statusCode = 404;
+      throw err;
+    }
+
+    // Kiểm tra biến thể tồn tại và còn hàng
+    const variant = await ProductVariant.findByPk(variantId, {
+      attributes: ["id", "stock", "status"],
+      include: [
+        {
+          model: Product,
+          as: "product",
+          attributes: ["id", "status"],
+          required: false,
+        },
+      ],
+      transaction: t,
+    });
+
+    if (!variant) {
+      const err = new Error("Variant no longer exists");
+      err.statusCode = 404;
+      throw err;
+    }
+
+    if (variant.status === 0 || (variant.product && variant.product.status === 0)) {
+      const err = new Error("Sản phẩm hoặc biến thể này đã ngừng kinh doanh");
+      err.statusCode = 400;
+      throw err;
+    }
+
+    if (qty > variant.stock) {
+      const err = new Error(
+        `Số lượng yêu cầu (${qty}) vượt quá tồn kho hiện có (${variant.stock})`
+      );
+      err.statusCode = 400;
       throw err;
     }
 

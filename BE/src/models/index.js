@@ -17,6 +17,7 @@ const ReviewReplies = require("./reviewReplyModel");
 const VariantAttribute = require("./variantAttributeModel");
 const VariantAttributeOption = require("./variantAttributeOptionModel");
 const VariantAttributeValue = require("./variantAttributeValueModel");
+const Banner = require("./bannerModel");
 
 // 1 Thương hiệu có nhiều sản phẩm
 Brand.hasMany(Product, { foreignKey: "brand_id", as: "products" });
@@ -140,6 +141,27 @@ VariantAttributeValue.belongsTo(VariantAttribute, {
   as: "attribute",
 });
 
+// Quan hệ Banner:
+// 1 Banner có thể liên kết với 1 Product (tùy chọn)
+Banner.belongsTo(Product, {
+  foreignKey: "product_id",
+  as: "product",
+});
+Product.hasMany(Banner, {
+  foreignKey: "product_id",
+  as: "banners",
+});
+
+// 1 Banner có thể liên kết với 1 Category (tùy chọn)
+Banner.belongsTo(Category, {
+  foreignKey: "category_id",
+  as: "category",
+});
+Category.hasMany(Banner, {
+  foreignKey: "category_id",
+  as: "banners",
+});
+
 module.exports = {
   sequelize,
   Brand,
@@ -159,4 +181,5 @@ module.exports = {
   VariantAttribute,
   VariantAttributeOption,
   VariantAttributeValue,
+  Banner,
 };

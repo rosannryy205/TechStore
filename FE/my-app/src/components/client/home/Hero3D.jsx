@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { SF_DISPLAY, SF_TEXT, MONO_TEXT } from "@/constants/typography";
+import { useHomeBanners } from "@/hooks/client/useHomeBanners";
+import { resolveProductImageUrl, handleImageError } from "@/utils/imageHelper";
 import heroImg from "@/assets/hero.png";
 import iphone18ProMaxImage from "@/assets/iphone18ProMax.webp";
 import banner1Img from "@/assets/banner1.jpg";
@@ -76,9 +78,59 @@ const FLAGSHIP_HERO_SLIDES = [
   },
 ];
 
+function parseHeroHeadline(slide) {
+  if (!slide) {
+    return {
+      prefix: "Kỷ nguyên",
+      img1: iphone18ProMaxImage,
+      mid: "công nghệ",
+      img2: banner2Img,
+      suffix: "nguyên khối.",
+    };
+  }
+
+  if (slide.titlePrefix || slide.titleMid || slide.titleSuffix) {
+    return {
+      prefix: slide.titlePrefix || "",
+      img1: slide.titleInlineImg1 || slide.inline_img_1 || iphone18ProMaxImage,
+      mid: slide.titleMid || "",
+      img2: slide.titleInlineImg2 || slide.inline_img_2 || banner2Img,
+      suffix: slide.titleSuffix || "",
+    };
+  }
+
+  const raw = slide.title || "";
+  if (raw.includes("{img1}") || raw.includes("{img2}")) {
+    const parts1 = raw.split("{img1}");
+    const prefix = parts1[0] || "";
+    const remaining = parts1[1] || "";
+    const parts2 = remaining.split("{img2}");
+    const mid = parts2[0] || "";
+    const suffix = parts2[1] || "";
+    return {
+      prefix,
+      img1: slide.inline_img_1 || iphone18ProMaxImage,
+      mid,
+      img2: slide.inline_img_2 || banner2Img,
+      suffix,
+    };
+  }
+
+  return {
+    prefix: raw,
+    img1: slide.inline_img_1 || iphone18ProMaxImage,
+    mid: "",
+    img2: slide.inline_img_2 || banner2Img,
+    suffix: "",
+  };
+}
+
 export default function Hero3D() {
+  const { banners: dynamicBanners } = useHomeBanners("hero_slide");
+  const slides = dynamicBanners && dynamicBanners.length > 0 ? dynamicBanners : FLAGSHIP_HERO_SLIDES;
   const [activeIdx, setActiveIdx] = useState(0);
-  const slide = FLAGSHIP_HERO_SLIDES[activeIdx];
+  const slide = slides[activeIdx] || slides[0] || FLAGSHIP_HERO_SLIDES[0];
+  const headline = parseHeroHeadline(slide);
 
   // 3D Canvas tilt state with multi-layer parallax
   const stageRef = useRef(null);
@@ -165,23 +217,29 @@ export default function Hero3D() {
               className="text-[38px] sm:text-[50px] lg:text-[62px] font-extrabold leading-[1.08] tracking-[-0.03em] text-white mb-6 text-left"
               style={{ fontFamily: SF_DISPLAY }}
             >
-              <span>{slide.titlePrefix}</span>{" "}
-              <span className="inline-flex items-center align-middle mx-1.5 my-1 sm:my-0 rounded-xl overflow-hidden border border-white/20 shadow-lg w-12 h-7 sm:w-16 sm:h-9 bg-white/5 shrink-0 transition-transform hover:scale-110">
-                <img
-                  src={slide.titleInlineImg1}
-                  alt="Context visual"
-                  className="w-full h-full object-cover"
-                />
-              </span>{" "}
-              <span>{slide.titleMid}</span>{" "}
-              <span className="inline-flex items-center align-middle mx-1.5 my-1 sm:my-0 rounded-xl overflow-hidden border border-white/20 shadow-lg w-12 h-7 sm:w-16 sm:h-9 bg-white/5 shrink-0 transition-transform hover:scale-110">
-                <img
-                  src={slide.titleInlineImg2}
-                  alt="Architecture visual"
-                  className="w-full h-full object-cover"
-                />
-              </span>{" "}
-              <span>{slide.titleSuffix}</span>
+              <span>{headline.prefix}</span>{" "}
+              {headline.img1 && (
+                <span className="inline-flex items-center align-middle mx-1.5 my-1 sm:my-0 rounded-xl overflow-hidden border border-white/20 shadow-lg w-12 h-7 sm:w-16 sm:h-9 bg-white/5 shrink-0 transition-transform hover:scale-110">
+                  <img
+                    src={resolveProductImageUrl(headline.img1)}
+                    alt="Context visual"
+                    className="w-full h-full object-cover"
+                    onError={(e) => handleImageError(e, iphone18ProMaxImage)}
+                  />
+                </span>
+              )}{" "}
+              {headline.mid && <span>{headline.mid}</span>}{" "}
+              {headline.img2 && (
+                <span className="inline-flex items-center align-middle mx-1.5 my-1 sm:my-0 rounded-xl overflow-hidden border border-white/20 shadow-lg w-12 h-7 sm:w-16 sm:h-9 bg-white/5 shrink-0 transition-transform hover:scale-110">
+                  <img
+                    src={resolveProductImageUrl(headline.img2)}
+                    alt="Architecture visual"
+                    className="w-full h-full object-cover"
+                    onError={(e) => handleImageError(e, banner2Img)}
+                  />
+                </span>
+              )}{" "}
+              {headline.suffix && <span>{headline.suffix}</span>}
             </h1>
 
             {/* Description (Steel Secondary color role, relaxed leading) */}
@@ -192,16 +250,16 @@ export default function Hero3D() {
             {/* CTA Restraint (Stitch DESIGN.md rule 69: Maximum one primary CTA button, no filler UI) */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full sm:w-auto mb-10">
               <Link
-                to={slide.primaryCta.link}
+                to={slide.primaryCta?.link || slide.primary_cta_link || "/products"}
                 className="inline-flex items-center justify-center min-h-[48px] px-8 py-3.5 rounded-full bg-[#3B82F6] text-white font-semibold text-[15px] transition-all hover:bg-[#2563EB] active:scale-[0.98] shadow-[0_10px_25px_-5px_rgba(59,130,246,0.4)] no-underline text-center cursor-pointer"
               >
-                {slide.primaryCta.label}
+                {slide.primaryCta?.label || slide.primary_cta_label || "Khám phá ngay"}
               </Link>
             </div>
 
             {/* Technical Metadata Specs in Geist Mono (Stitch DESIGN.md rule 47) */}
             <div className="w-full pt-6 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {slide.specs.map((item, idx) => (
+              {(slide.specs || []).map((item, idx) => (
                 <div key={idx} className="flex flex-col text-left">
                   <span
                     className="text-[11px] text-[#71717A] uppercase tracking-wider mb-1"
@@ -218,21 +276,24 @@ export default function Hero3D() {
 
             {/* Device Switcher Tabs */}
             <div className="flex items-center gap-2 mt-8">
-              {FLAGSHIP_HERO_SLIDES.map((s, idx) => (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveIdx(idx)}
-                  className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer ${
-                    activeIdx === idx
-                      ? "bg-white text-[#18181B] shadow-md scale-105"
-                      : "bg-white/10 text-white/70 hover:bg-white/20"
-                  }`}
-                  style={{ fontFamily: MONO_TEXT }}
-                  aria-label={`Chuyển sang ${s.badge}`}
-                >
-                  0{idx + 1} // {s.chipBadge.split("·")[0].trim()}
-                </button>
-              ))}
+              {slides.map((s, idx) => {
+                const chip = s.chipBadge || s.chip_badge || s.badge || "PRO";
+                return (
+                  <button
+                    key={s.id || idx}
+                    onClick={() => setActiveIdx(idx)}
+                    className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all cursor-pointer ${
+                      activeIdx === idx
+                        ? "bg-white text-[#18181B] shadow-md scale-105"
+                        : "bg-white/10 text-white/70 hover:bg-white/20"
+                    }`}
+                    style={{ fontFamily: MONO_TEXT }}
+                    aria-label={`Chuyển sang ${s.badge || s.title}`}
+                  >
+                    0{idx + 1} // {chip.split("·")[0].trim()}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -271,7 +332,7 @@ export default function Hero3D() {
                     style={{ fontFamily: MONO_TEXT }}
                   >
                     <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse" />
-                    {slide.chipBadge}
+                    {slide.chipBadge || slide.chip_badge || "PRO 3D"}
                   </span>
 
                   <span
@@ -295,18 +356,19 @@ export default function Hero3D() {
                     aria-hidden="true"
                     className="absolute w-56 h-56 rounded-full blur-3xl pointer-events-none transition-colors duration-700"
                     style={{
-                      backgroundColor: slide.ambientColor,
+                      backgroundColor: slide.ambientColor || slide.ambient_color || "rgba(59, 130, 246, 0.28)",
                       transform: "translateZ(-25px)",
                     }}
                   />
 
                   <img
-                    src={slide.deviceImage}
-                    alt={slide.badge}
+                    src={resolveProductImageUrl(slide.deviceImage || slide.image_url)}
+                    alt={slide.badge || slide.title || "Device 3D"}
                     className="max-w-[270px] sm:max-w-[320px] max-h-[320px] object-contain drop-shadow-[0_30px_45px_rgba(0,0,0,0.65)] transition-transform duration-500 hover:scale-105"
                     style={{
                       transform: "translateZ(30px)",
                     }}
+                    onError={(e) => handleImageError(e, iphone18ProMaxImage)}
                   />
                 </div>
 
@@ -323,10 +385,10 @@ export default function Hero3D() {
                       className="text-[20px] font-bold text-white tracking-tight leading-none"
                       style={{ fontFamily: MONO_TEXT }}
                     >
-                      {slide.metricValue}
+                      {slide.metricValue || slide.metric_value || "48MP"}
                     </span>
                     <span className="text-[11px] text-[#A1A1AA] mt-1">
-                      {slide.metricLabel}
+                      {slide.metricLabel || slide.metric_label || "Camera Fusion"}
                     </span>
                   </div>
 

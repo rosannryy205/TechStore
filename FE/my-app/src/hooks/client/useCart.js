@@ -15,9 +15,17 @@ export function useCart() {
   const [hasMounted, setHasMounted] = useState(false);
 
   const cartTotal = useMemo(() => {
-    return cartItems.reduce(
-      (acc, item) => acc + Number(item.price) * Number(item.quantity),
-      0
+    return cartItems.reduce((acc, item) => {
+      const p = Number(item.price);
+      const q = Number(item.quantity);
+      if (!Number.isFinite(p) || !Number.isFinite(q)) return acc;
+      return acc + p * q;
+    }, 0);
+  }, [cartItems]);
+
+  const hasUnavailableItems = useMemo(() => {
+    return cartItems.some(
+      (item) => item.isAvailable === false || item.stock === 0 || item.quantity > item.stock
     );
   }, [cartItems]);
 
@@ -40,7 +48,16 @@ export function useCart() {
 
         const sale = Number(variant.sale_price);
         const price = Number(variant.price);
-        const effectivePrice = Number.isFinite(sale) && sale > 0 ? sale : price;
+        let effectivePrice = Number.isFinite(sale) && sale > 0 ? sale : price;
+        if (!Number.isFinite(effectivePrice) || effectivePrice < 0) {
+          effectivePrice = 0;
+        }
+
+        const stock = typeof variant.stock === "number" ? variant.stock : 0;
+        const isAvailable =
+          it.isAvailable !== undefined
+            ? it.isAvailable
+            : Boolean(variant.id && stock > 0);
 
         return {
           id: it.variant_id,
@@ -53,6 +70,8 @@ export function useCart() {
                 .join(" • "),
           price: effectivePrice,
           quantity: Number(it.quantity ?? 1),
+          stock,
+          isAvailable,
           image:
             variant.img_url ||
             variant.image_url ||
@@ -83,6 +102,11 @@ export function useCart() {
     async (item, delta) => {
       const nextQty = item.quantity + delta;
       if (nextQty < 1) return;
+
+      if (delta > 0 && typeof item.stock === "number" && nextQty > item.stock) {
+        setError(`Số lượng yêu cầu vượt quá tồn kho hiện có (${item.stock}).`);
+        return;
+      }
 
       setCartItems((prev) =>
         prev.map((p) => (p.id === item.id ? { ...p, quantity: nextQty } : p))
@@ -124,18 +148,19 @@ export function useCart() {
   }, []);
 
   const handleCheckout = useCallback(() => {
-    if (cartItems.length === 0) return;
+    if (cartItems.length === 0 || hasUnavailableItems) return;
     navigate("/checkout", {
       state: {
         cartItems,
         cartTotal,
       },
     });
-  }, [cartItems, cartTotal, navigate]);
+  }, [cartItems, cartTotal, hasUnavailableItems, navigate]);
 
   return {
     cartItems,
     cartTotal,
+    hasUnavailableItems,
     loadingCart,
     authLoading,
     error,

@@ -37,6 +37,15 @@ export default function CartItemRow({
             {item.name}
           </h2>
           <p className="text-[17px] text-[#7a7a7a] font-normal">{item.tagline}</p>
+          {item.isAvailable === false || item.stock === 0 ? (
+            <span className="text-[13px] text-red-500 font-medium mt-1 inline-block">
+              Sản phẩm tạm thời hết hàng hoặc ngừng kinh doanh
+            </span>
+          ) : typeof item.stock === "number" && item.quantity > item.stock ? (
+            <span className="text-[13px] text-amber-600 font-medium mt-1 inline-block">
+              Chỉ còn {item.stock} sản phẩm trong kho
+            </span>
+          ) : null}
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-4">
@@ -73,7 +82,10 @@ export default function CartItemRow({
                 type="button"
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-[#f5f5f7] text-[20px] text-[#1d1d1f] hover:opacity-100 opacity-80 transition-opacity disabled:opacity-40 cursor-pointer"
                 aria-label="Increase quantity"
-                disabled={updatingItemId === item.id}
+                disabled={
+                  updatingItemId === item.id ||
+                  (typeof item.stock === "number" && item.quantity >= item.stock)
+                }
                 onClick={() => onChangeQuantity(item, +1)}
               >
                 +

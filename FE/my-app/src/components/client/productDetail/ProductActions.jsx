@@ -8,22 +8,30 @@ export default function ProductActions({
   onAddToCart,
   onToggleSave,
 }) {
+  const isOutOfStock = Boolean(
+    selectedVariant &&
+    typeof selectedVariant.stock === "number" &&
+    selectedVariant.stock <= 0
+  );
+
   return (
     <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:items-center">
       <button
         onClick={onAddToCart}
         aria-label="Thêm vào giỏ"
-        disabled={!selectedVariant || isPosting}
+        disabled={!selectedVariant || isPosting || isOutOfStock}
         className="inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[17px] font-normal tracking-[-0.374px] leading-[1.47] px-5.5 py-2.75 hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none disabled:opacity-50 disabled:cursor-not-allowed"
         style={{ fontFamily: SF_TEXT }}
       >
         {!selectedVariant
           ? "Không khả dụng"
-          : inCart
-            ? "Đã thêm ✓"
-            : isPosting
-              ? "Đang thêm..."
-              : "Thêm vào giỏ"}
+          : isOutOfStock
+            ? "Hết hàng"
+            : inCart
+              ? "Đã thêm ✓"
+              : isPosting
+                ? "Đang thêm..."
+                : "Thêm vào giỏ"}
       </button>
 
       <button
