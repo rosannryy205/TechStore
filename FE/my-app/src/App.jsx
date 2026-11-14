@@ -20,6 +20,7 @@ import CategoryManagement from "./pages/admin/categories/categoryManagement";
 import BrandManagement from "./pages/admin/brands/brandManagement";
 import AttributeManagement from "./pages/admin/attribute/attributeManagement";
 import OrderManagement from "./pages/admin/orders/orderManagement";
+import BannerManagement from "./pages/admin/banners/bannerManagement";
 import NotFound from "./pages/client/404";
 
 /**
@@ -83,6 +84,7 @@ function App() {
               <Route path="products/brands" element={<BrandManagement />} />
               <Route path="products/attributes" element={<AttributeManagement />} />
               <Route path="orders" element={<OrderManagement />} />
+              <Route path="banners" element={<BannerManagement />} />
               {/* Catch-all: hiển thị trang NotFound cho
                   mọi link admin chưa build body */}
               <Route path="*" element={<NotFound />} />

@@ -1,9 +1,15 @@
 import { Link } from "react-router-dom";
 import { SF_DISPLAY, SF_TEXT, MONO_TEXT } from "@/constants/typography";
+import { useHomeBanners } from "@/hooks/client/useHomeBanners";
+import { resolveProductImageUrl, handleImageError } from "@/utils/imageHelper";
 import banner2Img from "@/assets/banner2.jpg";
 import Card3D from "./Card3D";
 
 export default function HighlightSection() {
+  const { banners: tradeInBanners } = useHomeBanners("trade_in");
+  const tradeInBanner = tradeInBanners && tradeInBanners.length > 0 ? tradeInBanners[0] : null;
+  const tradeInImg = tradeInBanner?.image_url ? resolveProductImageUrl(tradeInBanner.image_url) : banner2Img;
+
   const perks = [
     {
       id: "express-delivery",
@@ -124,9 +130,10 @@ export default function HighlightSection() {
                   style={{ transform: "translateZ(50px)" }}
                 >
                   <img
-                    src={banner2Img}
-                    alt="Trade-in Device Showcase"
+                    src={tradeInImg}
+                    alt={tradeInBanner?.title || "Trade-in Device Showcase"}
                     className="w-56 h-44 object-cover rounded-2xl shadow-2xl transition-transform duration-500 hover:scale-105"
+                    onError={(e) => handleImageError(e, banner2Img)}
                   />
                 </div>
 
