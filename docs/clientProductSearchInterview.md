@@ -1,6 +1,6 @@
 # Kế hoạch tìm kiếm sản phẩm phía Client
 
-Trạng thái: đã triển khai FE/BE theo yêu cầu người dùng gọi skill implement; test, lint và build đạt. Đang hoàn tất review code và bàn giao. Nhật ký file/vị trí thực tế và kết quả kiểm tra nằm trong clientProductSearchChangeLog.md.
+Trạng thái: đã hoàn tất triển khai FE/BE, test, lint, build và review Standards/Spec. Nhật ký file/vị trí thực tế, lý do thay đổi và kết quả kiểm tra nằm trong clientProductSearchChangeLog.md.
 
 ## Mục tiêu
 
@@ -149,7 +149,7 @@ Endpoint: `GET /api/products`. Giữ API danh sách duy nhất cho trang kết q
 | `sale` | Boolean dạng query true/false; true chỉ lấy Promotional Product. |
 | `sort` | newest (mặc định), price_asc, price_desc, popular; khóa sort chỉ từ allowlist. |
 | `page` | Số nguyên dương, mặc định 1; vượt tổng trang thì trả trang cuối có dữ liệu. |
-| `limit` | Mặc định 12; giới hạn kỹ thuật dự kiến 1–100. FE/hộp thoại dùng 12, không cho request vô hạn. |
+| `limit` | Mặc định 12; giới hạn 1–100. FE/hộp thoại dùng 12, không cho request vô hạn. |
 
 Response thành công giữ `success: true` và `data` dạng mảng, thêm `total`, `page`, `limit`, `totalPages`. `total` là số Product duy nhất sau toàn bộ filter, không phải số dòng join hoặc số phần tử của trang. Với tập rỗng, data là [], total là 0, page là 1; totalPages tối thiểu 1 để tương thích quy ước trang hiện tại, UI không hiện điều khiển phân trang khi có tối đa một trang.
 

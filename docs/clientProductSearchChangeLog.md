@@ -4,7 +4,7 @@ Tài liệu này ghi các file thực tế đã sửa/thêm, vị trí cần đ�
 
 ## Trạng thái
 
-Đã triển khai FE/BE và chạy test, lint, build thành công. Đang thực hiện review Standards/Spec trước khi bàn giao. Mốc so sánh trước triển khai: `f3e41c232f96cf0e6bf76e990f77bc2a2ecd8a82`, branch `feature/search_product`.
+Đã hoàn tất triển khai FE/BE, test, lint, build và review Standards/Spec. Commit tính năng: `5671e00`; sửa validation cuối và hoàn tất nhật ký được lưu trong commit tiếp theo trên branch `feature/search_product`. Mốc so sánh trước triển khai: `f3e41c232f96cf0e6bf76e990f77bc2a2ecd8a82`.
 
 Các số dòng bên dưới là vị trí bắt đầu của hàm/component hoặc mục sau triển khai; đi kèm tên để dễ tìm khi dòng dịch chuyển. Comment logic mới/sửa được viết bằng tiếng Việt.
 
@@ -15,7 +15,7 @@ Các số dòng bên dưới là vị trí bắt đầu của hàm/component ho�
 | [productSearchService.js](../BE/src/services/client/productSearchService.js) | Thêm | Dòng 20 PRICE_RANGES/SORTS; dòng 44 getProductPage | Query Product theo mọi từ qua tên/Brand/Category; visibility; Starting Price; ưu đãi; sort; count và phân trang. | Lọc/sort phải xảy ra trước LIMIT để kết quả và tổng chính xác. SQL chọn một Variant đại diện trước, không nhân Product theo quan hệ một-nhiều. |
 | [productSearchService.js](../BE/src/services/client/productSearchService.js) | Thêm | Trong getProductPage: conditions/replacements, JOIN chosen, transaction và hydrate | Chuẩn hóa đ/d riêng; dữ liệu khách qua replacements; chọn Variant còn hàng/giá thấp nhất; hydrate chỉ ID của trang trong cùng snapshot. | Collation thực tế không tự khớp đ/d. Tham số tránh ghép dữ liệu người dùng vào SQL; snapshot giữ metadata/trang nhất quán; không tải cả catalog về Node. |
 | [productSearchQuery.js](../BE/src/utils/productSearchQuery.js) | Thêm | Dòng 2 normalizeProductKeyword, dòng 4 isProductKeywordAllowed | NFC, trim/gộp khoảng trắng và chỉ chấp nhận chữ cái/chữ số/khoảng trắng. | Tiếng Việt tổ hợp vẫn hợp lệ; query có ký tự cấm phải rỗng, không tự bỏ ký tự để tìm query khác. |
-| [productValidators.js](../BE/src/validators/productValidators.js) | Sửa | Dòng 10 listProductRules và export | Validate query, giới hạn 100 ký tự, limit 1–100, page nguyên dương, allowlist price/sort/sale; lấy matchedData. | Chặn query sai cấu trúc trước Service; Express 5 có getter req.query nên phải lấy dữ liệu đã sanitize từ validator. Validator tạo Product vẫn dùng riêng. |
+| [productValidators.js](../BE/src/validators/productValidators.js) | Sửa | Dòng 10 listProductRules và export | Validate query, giới hạn 100 ký tự, limit 1–100, page nguyên dương, allowlist price/sort/sale; lấy matchedData; từ chối tham số lặp trước sanitize. | Chặn query sai cấu trúc trước Service; Express 5 có getter req.query nên phải lấy matchedData. Mảng từ query lặp không được truyền vào LIMIT/OFFSET gây lỗi 500. Validator tạo Product vẫn dùng riêng. |
 | [productRoutes.js](../BE/src/routes/client/productRoutes.js) | Sửa | Dòng 13 route GET `/`, validator tại dòng 15 | Gắn validation trước controller danh sách. | Giữ Router phụ trách đường dẫn và middleware; không đặt logic truy vấn tại route. |
 | [productController.js](../BE/src/controllers/client/productController.js) | Sửa | Dòng 10 getAllProductsController | Chuyển query đã validate xuống Service, trả success cùng data/total/page/limit/totalPages. | Controller mỏng, không tính giá hoặc xử lý nghiệp vụ; FE cần metadata để phân trang. |
 | [productService.js](../BE/src/services/client/productService.js) | Sửa | Dòng 23 import getProductPage thành getAllProducts | Thay danh sách trả toàn bộ bằng Service phân trang mới; giữ các export home/chi tiết/related. | Chỉ đổi contract endpoint danh sách Client, tách truy vấn phức tạp khỏi các luồng sản phẩm khác. |
@@ -34,7 +34,7 @@ Giá và nhãn khuyến mãi được BE tính một lần. Q16 dùng phương �
 | [useProductSearch.js](../FE/my-app/src/hooks/client/useProductSearch.js) | Thêm | Dòng 19 useProductSearch; requestPage/effect/loadMore bên trong | Debounce 300 ms, IME, hủy request, bỏ response cũ, tải thêm 12 Product và chống trùng ID. | Kết quả phải theo query mới nhất kể cả khi hủy không kịp; trang của query cũ không được nối vào query mới. |
 | [productSearchOverlay.jsx](../FE/my-app/src/components/client/search/productSearchOverlay.jsx) | Thêm | Dòng 9 ProductSearchOverlay, effect focus/inert, submit và danh sách | Hộp thoại hiển thị Product thật khi gõ, loading/rỗng/lỗi, tải thêm, chọn chi tiết và Xem tất cả; Portal, focus trap và Escape. | Thay gợi ý hardcode; Portal/inert giữ bàn phím trong hộp thoại và phục hồi focus khi đóng, không để query nháp làm đổi URL từng phím. |
 | [productSearchForm.jsx](../FE/my-app/src/components/client/search/productSearchForm.jsx) | Thêm | Dòng 5 ProductSearchForm | Ô sửa từ khóa trên trang, kiểm 100 ký tự và không submit giữa lúc ghép dấu; xóa riêng q. | Sửa từ khóa vẫn giữ filter; form đồng bộ lại khi q thay đổi do submit/Back. |
-| [header.jsx](../FE/my-app/src/components/header.jsx) | Sửa | Import dòng 1; closeSearch dòng 185; mount overlay dòng 648 | Bỏ SearchOverlay/gợi ý cũ, dùng component mới chỉ mount khi mở; callback đóng ổn định. | Đóng hộp sẽ unmount/hủy request và query nháp; tránh nhồi logic mạng/IME vào Header. |
+| [header.jsx](../FE/my-app/src/components/header.jsx) | Sửa | Import dòng 1; comment MobileAccordion dòng 127; closeSearch dòng 185; mount overlay dòng 648 | Bỏ SearchOverlay/gợi ý cũ, dùng component mới chỉ mount khi mở; callback đóng ổn định; sửa comment cho đúng component còn lại. | Đóng hộp sẽ unmount/hủy request và query nháp; tránh nhồi logic mạng/IME vào Header và tránh comment cũ mô tả sai vị trí. |
 | [useProducts.js](../FE/my-app/src/hooks/client/useProducts.js) | Sửa | Dòng 19 useProducts; effect fetch/cache, setFilter/resetFilters/clearQuery | Đọc tiêu chí từ URL, gọi API một trang, nhận metadata, lọc lựa chọn Category/Brand active; bỏ tính giá/lọc/sort/slice sản phẩm tại FE. | Một trang từ BE không được lọc/sort lại tại FE; cache chỉ tránh gọi lặp khi BE kẹp trang và được xóa sau lỗi để Back không kẹt loading. |
 | [products.jsx](../FE/my-app/src/pages/client/products.jsx) | Sửa | Dòng 11 Products | Ghép tiêu đề/form/filter/grid/pagination, loading/lỗi chỉ ở vùng kết quả, Thử lại giữ tiêu chí. | Không mất ô nhập/filter khi tải và không reload toàn trang chỉ để thử lại API. |
 | [ProductListHeader.jsx](../FE/my-app/src/components/client/products/ProductListHeader.jsx) | Sửa | Dòng 10 ProductListHeader, title/count và reset | Hiện q và total từ BE, nhãn Xóa bộ lọc; lấy constants từ module riêng. | Người mua biết query đang áp dụng; phân biệt xóa filter với xóa q. |
@@ -71,7 +71,7 @@ Không sửa model/schema/database cửa hàng; quan hệ Category được join
 | Orca browser mobile 390×844 | Đạt | iphone 16 pro max cho đúng một Product; Enter mở URL kết quả tương ứng; không tràn ngang. Đã xem screenshot desktop/mobile để đối chiếu bố cục. |
 | git diff --check | Đạt | Không lỗi khoảng trắng/xung đột trong diff. |
 
-TDD có vòng đỏ → xanh tại API tìm Product/phân trang, hook tìm trực tiếp và lỗi Back sau lỗi mạng. API test tạo schema `techstore_search_test_<pid>` rồi xóa sau chạy, không gọi connectDB/sync trên database cửa hàng. Cần MySQL và tài khoản phát triển có quyền tạo/xóa schema test. FE test dùng jsdom/Vite và mock tại biên HTTP, không mock helper/Service nội bộ.
+TDD có vòng đỏ → xanh tại API tìm Product/phân trang, hook tìm trực tiếp, lỗi Back sau lỗi mạng và query lặp. Lượt kiểm tra cuối tái hiện `limit=1&limit=2` trả 500; sau sửa validator, cả năm dạng tham số lặp limit/page/sort/price/sale trả 400 và toàn bộ 6 test BE được chạy lại, đều đạt. API test tạo schema `techstore_search_test_<pid>` rồi xóa sau chạy, không gọi connectDB/sync trên database cửa hàng. Cần MySQL và tài khoản phát triển có quyền tạo/xóa schema test. FE test dùng jsdom/Vite và mock tại biên HTTP, không mock helper/Service nội bộ.
 
 Dự án dùng JavaScript và không có cấu hình TypeScript/typecheck; syntax BE, ESLint và Vite build là các bước kiểm tra tương ứng hiện có. Chưa benchmark catalog quy mô lớn, chưa cam kết ngưỡng thời gian đáp ứng hoặc kiểm thử mọi phiên bản MySQL/trình duyệt.
 
@@ -88,10 +88,10 @@ Dự án dùng JavaScript và không có cấu hình TypeScript/typecheck; synta
 
 ### Standards
 
-Đang chờ review độc lập từ mốc trước triển khai.
+Review độc lập diff từ mốc trước triển khai tới `5671e00`: không có vi phạm chuẩn hoặc heuristic cần hành động. Controller/Router mỏng; validation/Service đúng tầng; FE hook → Service → Fetch; file mới camelCase, Tailwind, comment tiếng Việt và nhật ký đầy đủ. SQL có tham số được ADR-0003 giải thích. Review bổ sung fix query lặp và comment Header cũng không có phát hiện cần sửa.
 
 ### Spec
 
-Đang chờ review độc lập theo clientProductSearchInterview.md.
+Review độc lập theo clientProductSearchInterview.md: không phát hiện yêu cầu bị thiếu, scope creep hoặc hành vi sai cụ thể trong live search, IME, query bị cấm, tải thêm, giá/visibility/count, reset và URL/Back. Review bổ sung xác nhận validator từ chối query lặp trước sanitize phù hợp yêu cầu trả 400 và không có regression rõ trong diff sửa cuối.
 
-Sau review sẽ ghi kết quả, sửa các phát hiện cần thiết, cập nhật số dòng nếu thay đổi và ghi commit bàn giao. Chỉ đánh dấu kiểm tra đạt khi đã thực sự chạy.
+Tổng kết review: Standards 0 phát hiện cần sửa; Spec 0 phát hiện cần sửa. Hai lỗi do kiểm tra triển khai phát hiện (cache Back sau lỗi mạng và query lặp) đã có test đỏ → xanh, được sửa và ghi ở các mục tương ứng. Kết quả hiệu năng catalog lớn vẫn là giới hạn chưa xác minh.

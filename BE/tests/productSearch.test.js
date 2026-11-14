@@ -150,6 +150,11 @@ test("ký tự cấm trả tập rỗng, còn query sai cấu trúc/quá dài tr
     "sale=maybe",
     "price=invalid",
     "q=a&q=b",
+    "limit=1&limit=2",
+    "page=1&page=2",
+    "sort=newest&sort=popular",
+    "price=all&price=under-10m",
+    "sale=true&sale=false",
     `q=${"a".repeat(101)}`,
   ]) {
     assert.equal((await fetch(`${baseUrl}?${query}`)).status, 400, query);

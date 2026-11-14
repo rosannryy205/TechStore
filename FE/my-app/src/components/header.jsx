@@ -124,7 +124,7 @@ function ChevronDown({ className = "" }) {
   );
 }
 
-/* ─── SEARCH OVERLAY (White Canvas / Gallery-Airy Architectural Glass Modal) ─── */
+/* Nhóm danh mục mở/đóng trong menu mobile; hộp tìm kiếm đã được tách riêng. */
 function MobileAccordion({ item, onNavigate }) {
   const [open, setOpen] = useState(false);
 
