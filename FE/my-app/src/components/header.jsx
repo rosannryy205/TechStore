@@ -295,11 +295,12 @@ export default function Header() {
         style={{ fontFamily: SF_TEXT }}
       >
         {/* Full-width Constrained Content Container */}
-        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12 h-full flex items-center justify-between relative">
+        <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-6 xl:px-8 2xl:px-12 h-full flex items-center justify-between gap-2 relative">
+          
           {/* ── 1. Restrained Architectural Brand Monogram ── */}
           <Link
             to="/"
-            className="flex items-center gap-3 text-[#18181B] no-underline shrink-0 group py-2"
+            className="flex items-center gap-2.5 xl:gap-3 text-[#18181B] no-underline shrink-0 group py-2"
             aria-label="Trang chủ TechStore"
           >
             <span className="relative inline-flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-br from-[#3B82F6] to-[#2563EB] shadow-xs transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-105">
@@ -316,7 +317,7 @@ export default function Header() {
             </span>
             <div className="flex flex-col text-left">
               <span
-                className="text-[15px] font-bold tracking-tight text-[#18181B] leading-none uppercase"
+                className="text-[14px] xl:text-[15px] font-bold tracking-tight text-[#18181B] leading-none uppercase"
                 style={{ fontFamily: SF_DISPLAY }}
               >
                 TechStore
@@ -333,7 +334,7 @@ export default function Header() {
           {/* ── 2. Desktop Clean Horizontal Navigation & Warm Human Dropdowns ── */}
           <nav
             id="global-nav"
-            className="hidden min-[1366px]:flex items-center gap-2 h-full shrink-0"
+            className="hidden min-[1180px]:flex items-center gap-1 xl:gap-1.5 2xl:gap-2 h-full shrink-0"
             aria-label="Điều hướng danh mục"
           >
             {loadingCategories ? (
@@ -352,13 +353,13 @@ export default function Header() {
                 return (
                   <div
                     key={cate.id || cate.slug}
-                    className="relative group h-full flex items-center"
+                    className="relative group h-full flex items-center shrink-0"
                     aria-label={`Danh mục: ${cate.name}`}
                   >
                     {/* Level 1 Capsule Link */}
                     <Link
                       to={`/products?cate=${encodeURIComponent(cate.slug)}`}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[13px] font-medium tracking-tight whitespace-nowrap text-[#3F3F46] hover:text-[#18181B] hover:bg-zinc-100/80 active:scale-[0.98] transition-all duration-200 no-underline cursor-pointer group-hover:bg-zinc-100 group-hover:text-[#18181B]"
+                      className="inline-flex items-center gap-1 xl:gap-1.5 px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-full text-[12.5px] xl:text-[13px] font-medium tracking-tight whitespace-nowrap text-[#3F3F46] hover:text-[#18181B] hover:bg-zinc-100/80 active:scale-[0.98] transition-all duration-200 no-underline cursor-pointer group-hover:bg-zinc-100 group-hover:text-[#18181B]"
                     >
                       <span>{cate.name}</span>
                       {hasBrands && (
@@ -369,7 +370,7 @@ export default function Header() {
                     {/* Level 2: Warm & Refined Submenu (Dropdown) Panel */}
                     {hasBrands && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible translate-y-1 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] z-50 pointer-events-auto">
-                        <div className="bg-white/98 backdrop-blur-2xl rounded-3xl p-6 shadow-[0_20px_45px_-12px_rgba(0,0,0,0.08)] border border-zinc-200/80 min-w-[380px] max-w-[460px] text-left">
+                        <div className="bg-white/98 backdrop-blur-2xl rounded-3xl p-5 xl:p-6 shadow-[0_20px_45px_-12px_rgba(0,0,0,0.08)] border border-zinc-200/80 min-w-[340px] xl:min-w-[380px] max-w-[420px] xl:max-w-[460px] text-left">
                           {/* Dropdown Header */}
                           <div className="flex items-center justify-between pb-3.5 mb-3.5 border-b border-zinc-100">
                             <span
@@ -432,28 +433,28 @@ export default function Header() {
             )}
 
             {/* Quick Links Divider */}
-            <div className="h-4 w-[1px] bg-zinc-200 mx-2" />
+            <div className="h-4 w-[1px] bg-zinc-200 mx-1 xl:mx-2 shrink-0" />
             <Link
               to="/products?sale=true"
-              className="px-3.5 py-2 rounded-full text-[13px] font-medium whitespace-nowrap text-[#3F3F46] hover:text-[#18181B] hover:bg-zinc-100/80 active:scale-[0.98] transition-all no-underline"
+              className="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-full text-[12.5px] xl:text-[13px] font-medium whitespace-nowrap text-[#3F3F46] hover:text-[#18181B] hover:bg-zinc-100/80 active:scale-[0.98] transition-all no-underline shrink-0"
             >
               Ưu đãi
             </Link>
             <Link
               to="/contact"
-              className="px-3.5 py-2 rounded-full text-[13px] font-medium whitespace-nowrap text-[#71717A] hover:text-[#18181B] hover:bg-zinc-100/80 active:scale-[0.98] transition-all no-underline"
+              className="px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-full text-[12.5px] xl:text-[13px] font-medium whitespace-nowrap text-[#71717A] hover:text-[#18181B] hover:bg-zinc-100/80 active:scale-[0.98] transition-all no-underline shrink-0"
             >
               Hỗ trợ
             </Link>
           </nav>
 
-          {/* ── 3. Action Tools with Rule 84 Compliant 44px Touch Targets ── */}
+          {/* ── 3. Action Tools with Rule 84 Compliant Touch Targets ── */}
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
             {/* Search Trigger */}
             <button
               id="search-toggle"
               onClick={() => setSearchOpen(true)}
-              className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-[#27272A] hover:text-[#18181B] bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 active:scale-[0.95] transition-all cursor-pointer"
+              className="min-w-[40px] xl:min-w-[44px] min-h-[40px] xl:min-h-[44px] w-10 xl:w-11 h-10 xl:h-11 rounded-full flex items-center justify-center text-[#27272A] hover:text-[#18181B] bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 active:scale-[0.95] transition-all cursor-pointer"
               aria-label="Tìm kiếm sản phẩm"
             >
               <SearchIcon />
@@ -462,7 +463,7 @@ export default function Header() {
             {/* Cart Bag with Discrete Badge */}
             <Link
               to="/cart"
-              className="min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center text-[#27272A] hover:text-[#18181B] bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 active:scale-[0.95] transition-all relative no-underline cursor-pointer"
+              className="min-w-[40px] xl:min-w-[44px] min-h-[40px] xl:min-h-[44px] w-10 xl:w-11 h-10 xl:h-11 rounded-full flex items-center justify-center text-[#27272A] hover:text-[#18181B] bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 active:scale-[0.95] transition-all relative no-underline cursor-pointer"
               aria-label="Giỏ hàng"
             >
               <BagIcon />
@@ -476,11 +477,11 @@ export default function Header() {
               )}
             </Link>
 
-            {/* User Profile / Login (Minimum 44px Tap Target) */}
+            {/* User Profile / Login */}
             {isAuthenticated ? (
               <Link
                 to="/user_profile"
-                className="hidden sm:inline-flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200/60 text-[#3B82F6] active:scale-[0.95] transition-all no-underline"
+                className="hidden sm:inline-flex shrink-0 items-center justify-center w-10 xl:w-11 h-10 xl:h-11 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200/60 text-[#3B82F6] active:scale-[0.95] transition-all no-underline"
                 aria-label="Trang cá nhân"
                 title={user?.name ? `Trang cá nhân: ${user.name}` : "Trang cá nhân"}
               >
@@ -490,7 +491,7 @@ export default function Header() {
               <button
                 type="button"
                 onClick={openLogin}
-                className="hidden sm:inline-flex shrink-0 items-center justify-center w-11 h-11 rounded-full bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 text-[#27272A] hover:text-[#18181B] transition-all active:scale-[0.95] cursor-pointer"
+                className="hidden sm:inline-flex shrink-0 items-center justify-center w-10 xl:w-11 h-10 xl:h-11 rounded-full bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 text-[#27272A] hover:text-[#18181B] transition-all active:scale-[0.95] cursor-pointer"
                 aria-label="Đăng nhập"
                 title="Đăng nhập"
               >
@@ -498,11 +499,11 @@ export default function Header() {
               </button>
             )}
 
-            {/* Mobile Menu Toggle (44px target) */}
+            {/* Mobile Menu Toggle */}
             <button
               id="mobile-menu-toggle"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="min-w-[44px] min-h-[44px] rounded-full flex min-[1366px]:hidden items-center justify-center text-[#27272A] hover:text-[#18181B] bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 transition-all cursor-pointer"
+              className="min-w-[40px] sm:min-w-[44px] min-h-[40px] sm:min-h-[44px] w-10 sm:w-11 h-10 sm:h-11 rounded-full flex min-[1180px]:hidden items-center justify-center text-[#27272A] hover:text-[#18181B] bg-zinc-100/80 hover:bg-zinc-200/80 border border-zinc-200/60 transition-all cursor-pointer"
               aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
             >
               {mobileOpen ? <CloseIcon /> : <HamburgerIcon />}
@@ -516,7 +517,7 @@ export default function Header() {
       ═══════════════════════════════════════════ */}
       {/* Dimmed Backdrop */}
       <div
-        className={`fixed inset-0 bg-[#18181B]/40 backdrop-blur-sm z-40 min-[1366px]:hidden transition-opacity duration-300 pointer-events-auto ${
+        className={`fixed inset-0 bg-[#18181B]/40 backdrop-blur-sm z-40 min-[1180px]:hidden transition-opacity duration-300 pointer-events-auto ${
           mobileOpen
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -527,7 +528,7 @@ export default function Header() {
       {/* Drawer Panel */}
       <div
         id="mobile-drawer"
-        className={`fixed top-0 right-0 h-full w-84 max-w-[85vw] bg-white/98 backdrop-blur-2xl z-50 min-[1366px]:hidden transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto pointer-events-auto border-l border-zinc-200/80 flex flex-col shadow-2xl ${
+        className={`fixed top-0 right-0 h-full w-84 max-w-[85vw] bg-white/98 backdrop-blur-2xl z-50 min-[1180px]:hidden transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-y-auto pointer-events-auto border-l border-zinc-200/80 flex flex-col shadow-2xl ${
           mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
