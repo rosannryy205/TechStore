@@ -9,7 +9,6 @@ const Cart = sequelize.define(
   "carts",
   {
     user_id: {
-      type: DataTypes.BIGINT(20),
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: true,

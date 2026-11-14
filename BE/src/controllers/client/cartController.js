@@ -35,11 +35,12 @@ const getCartController = async (req, res, next) => {
   }
 };
 
-// PUT /api/cart/items
-// Body: { variantId, quantity }
+// PUT /api/cart/items hoặc /api/cart/items/:variantId
+// Body: { variantId, quantity } hoặc params: { variantId }, body: { quantity }
 const updateCartItemController = async (req, res, next) => {
   try {
-    const { variantId, quantity } = req.body || {};
+    const variantId = req.params.variantId || req.body?.variantId;
+    const { quantity } = req.body || {};
 
     if (!variantId || quantity == null) {
       const err = new Error("Missing variantId or quantity");
@@ -49,7 +50,7 @@ const updateCartItemController = async (req, res, next) => {
 
     const result = await cartService.updateCartItemQuantity({
       userId: req.user.id,
-      variantId,
+      variantId: Number(variantId),
       quantity,
     });
 
@@ -59,11 +60,11 @@ const updateCartItemController = async (req, res, next) => {
   }
 };
 
-// DELETE /api/cart/items
-// Body: { variantId }
+// DELETE /api/cart/items hoặc /api/cart/items/:variantId
+// Body: { variantId } hoặc params: { variantId }
 const removeCartItemController = async (req, res, next) => {
   try {
-    const { variantId } = req.body || {};
+    const variantId = req.params.variantId || req.body?.variantId;
 
     if (!variantId) {
       const err = new Error("Missing variantId");
@@ -73,7 +74,7 @@ const removeCartItemController = async (req, res, next) => {
 
     const result = await cartService.removeCartItem({
       userId: req.user.id,
-      variantId,
+      variantId: Number(variantId),
     });
 
     return res.status(200).json({ success: true, data: result });

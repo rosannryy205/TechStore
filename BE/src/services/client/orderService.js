@@ -66,7 +66,15 @@ async function createOrder({
           {
             model: ProductVariant,
             as: "variant",
-            attributes: ["id", "product_id", "price", "sale_price", "stock"],
+            attributes: ["id", "product_id", "price", "sale_price", "stock", "status"],
+            include: [
+              {
+                model: Product,
+                as: "product",
+                attributes: ["id", "name", "status"],
+                required: false,
+              },
+            ],
           },
         ],
         transaction: t,
@@ -89,6 +97,14 @@ async function createOrder({
         if (!variant) {
           const err = new Error(
             `Product variant (ID: ${item.product_variant_id}) no longer exists`,
+          );
+          err.statusCode = 400;
+          throw err;
+        }
+
+        if (variant.status === 0 || (variant.product && variant.product.status === 0)) {
+          const err = new Error(
+            `Sản phẩm "${variant.product?.name || variant.id}" đã ngừng kinh doanh. Vui lòng xóa khỏi giỏ hàng.`,
           );
           err.statusCode = 400;
           throw err;

@@ -2,14 +2,15 @@ import Loading from "@/components/loading";
 import { SF_DISPLAY, SF_TEXT } from "@/constants/typography";
 import { formatVnd } from "@/utils/formatCurrency";
 import { useCart } from "@/hooks/client/useCart";
-import CartItemList from "@/components/client/cart/cartItemList";
-import CartSummary from "@/components/client/cart/cartSummary";
-import EmptyCart from "@/components/client/cart/emptyCart";
+import CartItemList from "@/components/client/cart/CartItemList";
+import CartSummary from "@/components/client/cart/CartSummary";
+import EmptyCart from "@/components/client/cart/EmptyCart";
 
 export default function Cart() {
   const {
     cartItems,
     cartTotal,
+    hasUnavailableItems,
     loadingCart,
     authLoading,
     error,
@@ -43,6 +44,12 @@ export default function Cart() {
           <div className="text-center py-6 bg-red-50 text-red-700 mb-6">{error}</div>
         ) : null}
 
+        {hasUnavailableItems ? (
+          <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 text-[15px] rounded-[11px] mb-6">
+            Một số sản phẩm trong giỏ hàng hiện đã hết hàng, ngừng kinh doanh hoặc vượt quá số lượng tồn kho. Vui lòng điều chỉnh số lượng hoặc xóa bỏ để tiếp tục thanh toán.
+          </div>
+        ) : null}
+
         {loadingCart ? (
           <div className="relative min-h-50">
             <Loading
@@ -66,7 +73,7 @@ export default function Cart() {
             <CartSummary
               cartTotal={cartTotal}
               onCheckout={handleCheckout}
-              isDisabled={cartItems.length === 0}
+              isDisabled={cartItems.length === 0 || hasUnavailableItems}
             />
           </>
         ) : (
