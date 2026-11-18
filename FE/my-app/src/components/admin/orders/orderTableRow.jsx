@@ -1,6 +1,7 @@
 import { EyeIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { formatVnd } from "@/utils/formatCurrency";
 import { formatDateVi } from "@/utils/formatDate";
+import { handleImageError } from "@/utils/imageHelper";
 import {
   ORDER_STATUS_MAP,
   PAYMENT_STATUS_MAP,
@@ -18,14 +19,14 @@ export default function OrderTableRow({
   const otherItemsCount = order.items ? order.items.length - 1 : 0;
 
   const statusConfig = ORDER_STATUS_MAP[order.order_status] || {
-    label: order.order_status,
+    label: "Cần kiểm tra",
     color: "text-gray-600",
     bg: "bg-gray-100",
     dot: "bg-gray-400",
   };
 
   const paymentConfig = PAYMENT_STATUS_MAP[order.payment_status] || {
-    label: order.payment_status,
+    label: "Cần kiểm tra",
     color: "text-gray-600",
     bg: "bg-gray-100",
     dot: "bg-gray-400",
@@ -81,10 +82,7 @@ export default function OrderTableRow({
               src={firstItem.image}
               alt={firstItem.product_name}
               className="h-10 w-10 rounded-lg object-cover ring-1 ring-black/5 bg-gray-50 shrink-0"
-              onError={(e) => {
-                e.target.src =
-                  "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=100&auto=format&fit=crop&q=80";
-              }}
+              onError={handleImageError}
             />
             <div className="min-w-0">
               <p className="text-[13px] font-medium text-[#1d1d1f] truncate max-w-[200px]">
@@ -149,7 +147,7 @@ export default function OrderTableRow({
           ].join(" ")}
         >
           <span className={["h-1.5 w-1.5 rounded-full", statusConfig.dot].join(" ")} />
-          {statusConfig.label}
+            {order.needs_review ? "Cần kiểm tra" : statusConfig.label}
         </span>
       </td>
 
@@ -157,7 +155,7 @@ export default function OrderTableRow({
       <td className="py-4 pl-3 pr-4 sm:pr-6 text-right whitespace-nowrap">
         <div className="flex items-center justify-end gap-1.5">
           {/* Nút hành động nhanh 1-click nếu là pending */}
-          {order.order_status === "pending" && (
+          {order.next_status === "confirmed" && (
             <button
               type="button"
               onClick={() => onQuickAdvance(order)}

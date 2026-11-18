@@ -104,3 +104,14 @@ export const ORDER_STATUS_FLOW = [
   "shipping",
   "completed",
 ];
+
+// Dữ liệu cũ thiếu trạng thái/phương thức không được suy đoán thành COD hay chưa thanh toán.
+export function needsOrderReview(order) {
+  return !Object.hasOwn(ORDER_STATUS_MAP, order?.order_status)
+    || !Object.hasOwn(PAYMENT_STATUS_MAP, order?.payment_status)
+    || !Object.hasOwn(PAYMENT_METHOD_MAP, order?.payment_method);
+}
+
+export function canCustomerCancelOrder(order) {
+  return !needsOrderReview(order) && order.order_status === "pending" && order.payment_status !== "paid";
+}

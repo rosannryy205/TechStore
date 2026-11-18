@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const requireAuth = require("../../middleware/requireAuth");
+const { cancelRules, validate } = require("../../validators/adminOrderValidators");
 const {
   createOrderController,
   getMyOrdersController,
@@ -26,6 +27,6 @@ router.get("/my-orders", requireAuth, getMyOrdersController);
 router.get("/", requireAuth, getMyOrdersController);
 
 // PUT /api/orders/:id/cancel — Hủy đơn hàng (chỉ khi pending) (yêu cầu đăng nhập)
-router.put("/:id/cancel", requireAuth, cancelOrderController);
+router.put("/:id/cancel", requireAuth, cancelRules(), validate, cancelOrderController);
 
 module.exports = router;

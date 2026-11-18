@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Get Orders'
+order: 1000
+method: GET
+url: 'http://localhost:3000/api/admin/orders?page=1&limit=8&status=all&sortBy=newest'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Admin/Staff list is paginated", function () {
+        pm.response.to.have.status(200);
+        const result = pm.response.json();
+        pm.expect(result.data.length).to.be.at.most(8);
+        pm.expect(result).to.have.property("countsByStatus");
+      });

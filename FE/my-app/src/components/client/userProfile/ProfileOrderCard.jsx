@@ -3,7 +3,7 @@ import {
   ArrowPathIcon,
   TruckIcon,
 } from "@heroicons/react/24/outline";
-import { ORDER_STATUS_MAP } from "@/constants/orderStatus";
+import { ORDER_STATUS_MAP, canCustomerCancelOrder, needsOrderReview } from "@/constants/orderStatus";
 import { formatVnd } from "@/utils/formatCurrency";
 import { formatDateVi } from "@/utils/formatDate";
 import { SF_DISPLAY } from "@/constants/typography";
@@ -17,14 +17,14 @@ export default function ProfileOrderCard({
   cancellingId,
   reorderingId,
 }) {
-  const statusInfo = ORDER_STATUS_MAP[order.order_status] || {
-    label: order.order_status,
+  const statusInfo = (!needsOrderReview(order) && ORDER_STATUS_MAP[order.order_status]) || {
+    label: "Cần kiểm tra",
     color: "text-zinc-600",
     bg: "bg-zinc-100",
     border: "border-zinc-200",
   };
 
-  const canCancel = order.order_status === "pending";
+  const canCancel = canCustomerCancelOrder(order);
   const canReorder = order.order_status === "completed" || order.order_status === "cancelled";
 
   return (

@@ -13,6 +13,12 @@ export default function OrderManagement() {
   const {
     orders,
     loading,
+    error,
+    detailLoading,
+    detailError,
+    refreshOrders,
+    busy,
+    bulkResult,
     totalOrders,
     currentPage,
     totalPages,
@@ -47,13 +53,11 @@ export default function OrderManagement() {
     handleOpenCancelModal,
     handleConfirmCancel,
     setIsCancelModalOpen,
-    handleUpdatePaymentStatus,
     handleBulkAdvance,
     setSelectedOrderIds,
     handleOpenPrint,
     handleClosePrint,
     handleExportCsv,
-    handleResetData,
   } = useAdminOrders();
 
   const handleResetFilters = () => {
@@ -74,11 +78,12 @@ export default function OrderManagement() {
         onClose={closeNotification}
       />
 
+      <fieldset disabled={busy} className="min-w-0">
       {/* 1. Header Trang */}
       <OrderManagementHeader
         totalOrders={totalOrders}
-        onResetData={handleResetData}
         onExportCsv={handleExportCsv}
+        onRefresh={refreshOrders}
       />
 
       {/* 2. Tabs trạng thái */}
@@ -104,8 +109,13 @@ export default function OrderManagement() {
       />
 
       {/* 4. Bảng danh sách đơn hàng & Phân trang */}
+      {bulkResult && <section aria-live="polite" className="mb-4 rounded-xl border border-gray-200 bg-white p-4 text-sm">
+        <h2 className="font-semibold">Kết quả lần cập nhật hàng loạt gần nhất: {bulkResult.updatedCount} thành công, {bulkResult.failedCount} thất bại</h2>
+        <ul className="mt-2 space-y-1">{bulkResult.results.map((item) => <li key={item.id} className={item.success ? "text-green-700" : "text-red-700"}>Đơn #{item.id}: {item.success ? "Thành công" : item.message}</li>)}</ul>
+      </section>}
+      {error && <div role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error} <button type="button" onClick={refreshOrders} className="ml-3 underline">Thử lại</button></div>}
       <OrderTable
-        orders={orders}
+        orders={error ? [] : orders}
         loading={loading}
         selectedOrderIds={selectedOrderIds}
         currentPage={currentPage}
@@ -120,12 +130,13 @@ export default function OrderManagement() {
 
       {/* 5. Thanh tác vụ hàng loạt nổi */}
       <OrderBulkActionBar
-        selectedCount={selectedOrderIds.length}
+        selectedCount={loading ? 0 : selectedOrderIds.length}
         onBulkAdvance={handleBulkAdvance}
         onClearSelection={() => setSelectedOrderIds([])}
       />
 
       {/* 6. Slide-over Drawer xem chi tiết đơn hàng */}
+      {isDrawerOpen && (detailLoading || detailError) && <div role="status" className="fixed top-4 right-4 z-[60] rounded-xl border bg-white p-4 shadow-sm">{detailError || "Đang tải chi tiết…"}{detailError && <button type="button" onClick={refreshOrders} className="ml-3 underline">Thử lại</button>}</div>}
       <OrderDetailDrawer
         isOpen={isDrawerOpen}
         order={selectedOrder}
@@ -133,12 +144,12 @@ export default function OrderManagement() {
         onUpdateStatus={handleUpdateStatus}
         onOpenCancelModal={handleOpenCancelModal}
         onOpenPrint={handleOpenPrint}
-        onUpdatePaymentStatus={handleUpdatePaymentStatus}
       />
 
       {/* 7. Modal xác nhận hủy đơn */}
       <OrderCancelModal
         isOpen={isCancelModalOpen}
+        busy={busy}
         orderCode={selectedOrder?.order_code || ""}
         onClose={() => setIsCancelModalOpen(false)}
         onConfirm={handleConfirmCancel}
@@ -150,6 +161,7 @@ export default function OrderManagement() {
         order={printOrder}
         onClose={handleClosePrint}
       />
+      </fieldset>
     </div>
   );
 }

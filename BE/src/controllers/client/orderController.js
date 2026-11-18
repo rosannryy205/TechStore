@@ -65,6 +65,9 @@ const cancelOrderController = async (req, res, next) => {
     const result = await orderService.cancelOrder({
       orderId,
       userId: req.user.id,
+      expectedStatus: req.body.expected_status,
+      requestId: req.body.request_id,
+      reason: req.body.reason,
     });
     return res.status(200).json({ success: true, data: result });
   } catch (err) {

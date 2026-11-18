@@ -1,360 +1,161 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { mockOrderService } from "@/services/api/admin/mockOrderService";
-import { ORDER_STATUS_FLOW } from "@/constants/orderStatus";
+import { adminOrderService, exportOrdersCsv } from "@/services/api/admin/orderService";
 
 export function useAdminOrders() {
   const [searchParams, setSearchParams] = useSearchParams();
-
-  // Đọc status từ URL query param, mặc định là 'all'
   const activeStatus = searchParams.get("status") || "all";
-
-  // Bộ lọc & Tìm kiếm
-  const [searchTerm, setSearchTerm] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("all");
-  const [paymentStatus, setPaymentStatus] = useState("all");
-  const [dateRange, setDateRange] = useState("all");
-  const [sortBy, setSortBy] = useState("newest");
-  const [reloadKey, setReloadKey] = useState(0);
-
-  // Dữ liệu & Phân trang
-  const [orders, setOrders] = useState([]);
+  const [filters, setFilters] = useState({ search: "", paymentMethod: "all", paymentStatus: "all", dateRange: "all", sortBy: "newest", page: 1 });
+  const [result, setResult] = useState({ data: [], total: 0, page: 1, totalPages: 1, countsByStatus: {} });
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [countsByStatus, setCountsByStatus] = useState({
-    all: 0,
-    pending: 0,
-    confirmed: 0,
-    processing: 0,
-    shipping: 0,
-    completed: 0,
-    cancelled: 0,
-  });
-
-  // Chọn hàng loạt (Bulk actions)
+  const [error, setError] = useState("");
+  const [reloadKey, setReloadKey] = useState(0);
   const [selectedOrderIds, setSelectedOrderIds] = useState([]);
-
-  // Drawer xem chi tiết đơn hàng (Dùng ID, tính toán derived state tự động cập nhật)
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  // Modal hủy đơn
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [cancellingOrderId, setCancellingOrderId] = useState(null);
-
-  // Modal in phiếu giao hàng
-  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [printOrder, setPrintOrder] = useState(null);
-
-  // Notification Toast
-  const [notification, setNotification] = useState({
-    isOpen: false,
-    message: "",
-    type: "success",
-  });
-
-  const showNotification = useCallback((message, type = "success") => {
-    setNotification({
-      isOpen: true,
-      message,
-      type,
-    });
-  }, []);
-
-  const closeNotification = useCallback(() => {
-    setNotification((prev) => ({ ...prev, isOpen: false }));
-  }, []);
-
-  const refreshOrders = useCallback(() => {
-    setReloadKey((prev) => prev + 1);
-  }, []);
-
-  // Tải danh sách đơn hàng từ Mock Service
-  useEffect(() => {
-    let ignore = false;
-
-    async function loadOrders() {
-      try {
-        setLoading(true);
-        const res = await mockOrderService.getOrders({
-          status: activeStatus,
-          search: searchTerm,
-          paymentMethod,
-          paymentStatus,
-          dateRange,
-          sortBy,
-          page: currentPage,
-          limit: 8,
-        });
-
-        if (!ignore) {
-          setOrders(res.orders);
-          setTotalOrders(res.total);
-          setTotalPages(res.totalPages);
-          setCountsByStatus(res.countsByStatus);
-        }
-      } catch (err) {
-        if (!ignore) {
-          console.error("Lỗi khi tải danh sách đơn hàng:", err);
-          showNotification("Không thể tải danh sách đơn hàng", "error");
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadOrders();
-
-    return () => {
-      ignore = true;
-    };
-  }, [
-    activeStatus,
-    searchTerm,
-    paymentMethod,
-    paymentStatus,
-    dateRange,
-    sortBy,
-    currentPage,
-    reloadKey,
-    showNotification,
-  ]);
-
-  // Derived state: luôn lấy dữ liệu mới nhất từ mảng orders
-  const selectedOrder = orders.find((o) => o.id === selectedOrderId) || null;
-
-  // Đổi tab trạng thái và cập nhật URL query params
-  const handleTabChange = (statusKey) => {
-    setCurrentPage(1);
+  const [selectionStatus, setSelectionStatus] = useState(activeStatus);
+  // Back/Forward đổi tab cũng phải bỏ lựa chọn, kể cả không đi qua nút đổi tab.
+  if (selectionStatus !== activeStatus) {
+    setSelectionStatus(activeStatus);
     setSelectedOrderIds([]);
-    if (statusKey === "all") {
-      searchParams.delete("status");
-      setSearchParams(searchParams);
-    } else {
-      searchParams.set("status", statusKey);
-      setSearchParams(searchParams);
-    }
-  };
+  }
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [detailError, setDetailError] = useState("");
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [printOrder, setPrintOrder] = useState(null);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [notification, setNotification] = useState({ isOpen: false, message: "", type: "success" });
+  const [busy, setBusy] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
+  const busyRef = useRef(false);
+  const cancelRequest = useRef(null);
+  const showNotification = useCallback((message, type = "success") => setNotification({ isOpen: true, message, type }), []);
+  const refreshOrders = useCallback(() => setReloadKey((key) => key + 1), []);
 
-  // Tìm kiếm
-  const handleSearchChange = (val) => {
-    setSearchTerm(val);
-    setCurrentPage(1);
-  };
+  useEffect(() => {
+    const controller = new AbortController();
+    // Debounce tìm kiếm và bỏ phản hồi cũ, không cho query trước ghi đè danh sách mới.
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const data = await adminOrderService.getOrders({ ...filters, status: activeStatus, limit: 8 }, controller.signal);
+        if (!controller.signal.aborted) setResult(data);
+      } catch (failure) {
+        if (!controller.signal.aborted) setError(failure.message);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    }, 200);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [filters, activeStatus, reloadKey]);
 
-  // Thay đổi trang
+  useEffect(() => {
+    if (!isDrawerOpen || !selectedOrderId) return;
+    const controller = new AbortController();
+    Promise.resolve().then(async () => {
+      if (controller.signal.aborted) return;
+      setDetailLoading(true);
+      setDetailError("");
+      try {
+        const detail = await adminOrderService.getOrder(selectedOrderId, controller.signal);
+        if (!controller.signal.aborted) setSelectedOrder(detail);
+      } catch (failure) {
+        if (!controller.signal.aborted) setDetailError(failure.message);
+      } finally {
+        if (!controller.signal.aborted) setDetailLoading(false);
+      }
+    });
+    return () => controller.abort();
+  }, [selectedOrderId, isDrawerOpen, reloadKey]);
+
+  const changeFilter = (key, value) => {
+    setFilters((previous) => ({ ...previous, [key]: value, page: 1 }));
+    setSelectedOrderIds([]);
+    setLoading(true);
+  };
+  const handleTabChange = (status) => {
+    setSearchParams((previous) => { const next = new URLSearchParams(previous); if (status === "all") next.delete("status"); else next.set("status", status); return next; });
+    changeFilter("page", 1);
+  };
   const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
-    }
+    if (page < 1 || page > result.totalPages) return;
+    setFilters((previous) => ({ ...previous, page }));
+    setSelectedOrderIds([]);
+    setLoading(true);
   };
-
-  // Chọn checkbox đơn lẻ
-  const handleSelectOne = (id, checked) => {
-    setSelectedOrderIds((prev) =>
-      checked ? [...prev, id] : prev.filter((orderId) => orderId !== id)
-    );
-  };
-
-  // Chọn tất cả checkbox trên trang hiện tại
-  const handleSelectAll = (checked) => {
-    if (checked) {
-      const pageIds = orders.map((o) => o.id);
-      setSelectedOrderIds(Array.from(new Set([...selectedOrderIds, ...pageIds])));
-    } else {
-      const pageIds = new Set(orders.map((o) => o.id));
-      setSelectedOrderIds((prev) => prev.filter((id) => !pageIds.has(id)));
-    }
-  };
-
-  // Mở drawer xem chi tiết
   const handleOpenDetail = (order) => {
+    setSelectedOrder(order);
     setSelectedOrderId(order.id);
+    setDetailError("");
     setIsDrawerOpen(true);
   };
 
-  // Đóng drawer
-  const handleCloseDetail = () => {
-    setIsDrawerOpen(false);
-  };
-
-  // Chuyển nhanh sang trạng thái kế tiếp (Quick Advance 1-Click)
-  const handleQuickAdvance = async (order) => {
-    const currentIndex = ORDER_STATUS_FLOW.indexOf(order.order_status);
-    if (currentIndex === -1 || currentIndex >= ORDER_STATUS_FLOW.length - 1) {
-      return;
-    }
-    const nextStatus = ORDER_STATUS_FLOW[currentIndex + 1];
-
+  // Khóa bằng ref ngay trước await để hai click trong cùng frame không tạo hai request.
+  const mutate = async (action, successMessage) => {
+    if (busyRef.current) return false;
+    busyRef.current = true;
+    setBusy(true);
     try {
-      await mockOrderService.updateOrderStatus(order.id, nextStatus);
-      showNotification(
-        `Đơn hàng ${order.order_code} đã chuyển sang "${nextStatus.toUpperCase()}"`,
-        "success"
-      );
+      const data = await action();
+      showNotification(typeof successMessage === "function" ? successMessage(data) : successMessage, data?.failedCount ? "error" : "success");
+      setSelectedOrderIds([]);
       refreshOrders();
-    } catch (err) {
-      console.error("Lỗi cập nhật nhanh:", err);
-      showNotification("Có lỗi xảy ra khi cập nhật trạng thái đơn hàng", "error");
+      return true;
+    } catch (failure) {
+      showNotification(failure.message || "Không xử lý được yêu cầu.", "error");
+      refreshOrders();
+      return false;
+    } finally {
+      busyRef.current = false;
+      setBusy(false);
     }
   };
-
-  // Cập nhật trạng thái từ Drawer
-  const handleUpdateStatus = async (orderId, newStatus) => {
-    try {
-      const updated = await mockOrderService.updateOrderStatus(orderId, newStatus);
-      showNotification(
-        `Đã cập nhật trạng thái đơn ${updated.order_code} thành công`,
-        "success"
-      );
-      refreshOrders();
-    } catch (err) {
-      console.error("Lỗi cập nhật trạng thái:", err);
-      showNotification("Không thể cập nhật trạng thái đơn hàng", "error");
-    }
+  const handleUpdateStatus = (id, target) => {
+    const order = selectedOrder?.id === id ? selectedOrder : result.data.find((item) => item.id === id);
+    if (order) return mutate(() => adminOrderService.updateStatus(id, order.order_status, target), "Đã cập nhật trạng thái đơn hàng.");
   };
-
-  // Mở modal hủy đơn
-  const handleOpenCancelModal = (orderId) => {
-    setCancellingOrderId(orderId);
-    setIsCancelModalOpen(true);
-  };
-
-  // Xác nhận hủy đơn kèm lý do
+  const handleQuickAdvance = (order) => order.next_status && mutate(() => adminOrderService.updateStatus(order.id, order.order_status, order.next_status), "Đã xác nhận đơn hàng.");
   const handleConfirmCancel = async (reason) => {
-    if (!cancellingOrderId) return;
-    try {
-      const updated = await mockOrderService.updateOrderStatus(
-        cancellingOrderId,
-        "cancelled",
-        reason
-      );
-      setIsCancelModalOpen(false);
-      setCancellingOrderId(null);
-      showNotification(`Đã hủy đơn hàng ${updated.order_code}`, "warning");
-      refreshOrders();
-    } catch (err) {
-      console.error("Lỗi hủy đơn hàng:", err);
-      showNotification("Không thể hủy đơn hàng", "error");
-    }
+    if (!selectedOrder) return;
+    if (!cancelRequest.current || cancelRequest.current.reason !== reason) cancelRequest.current = { reason, request_id: crypto.randomUUID(), expected_status: selectedOrder.order_status };
+    const succeeded = await mutate(async () => {
+      try { return await adminOrderService.cancel(selectedOrder.id, cancelRequest.current); }
+      catch (failure) {
+        if (failure.status < 500 || failure.payload?.code === "CANCELLATION_FAILED") cancelRequest.current = null;
+        throw failure;
+      }
+    }, "Đã hủy đơn hàng và hoàn kho.");
+    if (succeeded) { setIsCancelModalOpen(false); cancelRequest.current = null; }
   };
-
-  // Cập nhật trạng thái thanh toán từ Drawer
-  const handleUpdatePaymentStatus = async (orderId, newPaymentStatus) => {
-    try {
-      const updated = await mockOrderService.updatePaymentStatus(
-        orderId,
-        newPaymentStatus
-      );
-      showNotification(
-        `Đã cập nhật thanh toán đơn ${updated.order_code}: ${newPaymentStatus}`,
-        "success"
-      );
-      refreshOrders();
-    } catch (err) {
-      console.error("Lỗi cập nhật thanh toán:", err);
-      showNotification("Không thể cập nhật thanh toán", "error");
-    }
-  };
-
-  // Thao tác hàng loạt (Bulk Status Advance)
-  const handleBulkAdvance = async (newStatus) => {
-    if (!selectedOrderIds.length) return;
-    try {
-      const { updatedCount } = await mockOrderService.bulkUpdateStatus(
-        selectedOrderIds,
-        newStatus
-      );
-      setSelectedOrderIds([]);
-      showNotification(
-        `Đã cập nhật thành công ${updatedCount} đơn hàng sang trạng thái mới`,
-        "success"
-      );
-      refreshOrders();
-    } catch (err) {
-      console.error("Lỗi thao tác hàng loạt:", err);
-      showNotification("Thao tác hàng loạt thất bại", "error");
-    }
-  };
-
-  // Mở modal in phiếu
-  const handleOpenPrint = (order) => {
-    setPrintOrder(order);
-    setIsPrintModalOpen(true);
-  };
-
-  const handleClosePrint = () => {
-    setIsPrintModalOpen(false);
-    setPrintOrder(null);
-  };
-
-  // Xuất file CSV
-  const handleExportCsv = () => {
-    mockOrderService.exportOrdersCsv(orders);
-    showNotification("Đã xuất danh sách đơn hàng sang file CSV", "success");
-  };
-
-  // Đặt lại dữ liệu mẫu
-  const handleResetData = async () => {
-    try {
-      await mockOrderService.resetData();
-      setSelectedOrderIds([]);
-      setCurrentPage(1);
-      showNotification("Đã đặt lại toàn bộ dữ liệu đơn hàng mẫu ban đầu", "success");
-      refreshOrders();
-    } catch (err) {
-      console.error("Lỗi reset dữ liệu:", err);
-      showNotification("Không thể đặt lại dữ liệu", "error");
-    }
+  const handleBulkAdvance = (target) => {
+    const orders = result.data.filter((order) => selectedOrderIds.includes(order.id));
+    if (!orders.length) return;
+    return mutate(async () => {
+      const data = await adminOrderService.bulkStatus(orders, target);
+      setBulkResult(data);
+      return data;
+    }, (data) => `${data.updatedCount} đơn thành công, ${data.failedCount} đơn thất bại.`);
   };
 
   return {
-    orders,
-    loading,
-    totalOrders,
-    currentPage,
-    totalPages,
-    countsByStatus,
-    activeStatus,
-    searchTerm,
-    paymentMethod,
-    paymentStatus,
-    dateRange,
-    sortBy,
-    selectedOrderIds,
-    selectedOrder,
-    isDrawerOpen,
-    isCancelModalOpen,
-    isPrintModalOpen,
-    printOrder,
-    notification,
-    closeNotification,
-    handleTabChange,
-    handleSearchChange,
-    setPaymentMethod,
-    setPaymentStatus,
-    setDateRange,
-    setSortBy,
+    orders: result.data, loading, error, refreshOrders, detailLoading, detailError, busy, bulkResult,
+    totalOrders: result.total, currentPage: result.page, totalPages: result.totalPages, countsByStatus: result.countsByStatus,
+    activeStatus, searchTerm: filters.search, paymentMethod: filters.paymentMethod, paymentStatus: filters.paymentStatus, dateRange: filters.dateRange, sortBy: filters.sortBy,
+    selectedOrderIds, selectedOrder, isDrawerOpen, isCancelModalOpen, isPrintModalOpen, printOrder, notification,
+    closeNotification: () => setNotification((previous) => ({ ...previous, isOpen: false })),
+    handleTabChange, handleSearchChange: (value) => changeFilter("search", value),
+    setPaymentMethod: (value) => changeFilter("paymentMethod", value), setPaymentStatus: (value) => changeFilter("paymentStatus", value), setDateRange: (value) => changeFilter("dateRange", value), setSortBy: (value) => changeFilter("sortBy", value),
     handlePageChange,
-    handleSelectOne,
-    handleSelectAll,
-    handleOpenDetail,
-    handleCloseDetail,
-    handleQuickAdvance,
-    handleUpdateStatus,
-    handleOpenCancelModal,
-    handleConfirmCancel,
-    setIsCancelModalOpen,
-    handleUpdatePaymentStatus,
-    handleBulkAdvance,
-    setSelectedOrderIds,
-    handleOpenPrint,
-    handleClosePrint,
-    handleExportCsv,
-    handleResetData,
+    handleSelectOne: (id, checked) => { if (!busy && !loading) setSelectedOrderIds((previous) => checked ? [...new Set([...previous, id])] : previous.filter((item) => item !== id)); },
+    handleSelectAll: (checked) => { if (!busy && !loading) setSelectedOrderIds(checked ? result.data.map((order) => order.id) : []); },
+    handleOpenDetail, handleCloseDetail: () => { if (!busy) setIsDrawerOpen(false); },
+    handleUpdateStatus, handleQuickAdvance,
+    handleOpenCancelModal: () => { cancelRequest.current = null; setIsCancelModalOpen(true); },
+    handleConfirmCancel, setIsCancelModalOpen, handleBulkAdvance, setSelectedOrderIds,
+    handleOpenPrint: (order) => { setPrintOrder(order); setIsPrintModalOpen(true); },
+    handleClosePrint: () => setIsPrintModalOpen(false),
+    handleExportCsv: () => { if (!loading && !error) exportOrdersCsv(result.data); },
   };
 }

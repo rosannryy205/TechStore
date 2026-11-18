@@ -45,16 +45,36 @@ Giỏ hàng trực tuyến lưu trữ trên hệ thống, gắn liền với tà
 _Avoid_: Bag, Shopping basket
 
 **Order**:
-Đơn đặt hàng được tạo sau khi khách hàng xác nhận giỏ hàng và thông tin thanh toán, vận hành qua vòng đời trạng thái: Pending -> Confirmed -> Processing -> Shipping -> Completed (hoặc Cancelled). Khách hàng chỉ có quyền tự hủy đơn khi ở trạng thái Pending; từ Confirmed trở đi quyền chuyển đổi trạng thái thuộc về Admin hoặc Staff.
+Đơn đặt hàng được tạo sau khi khách hàng xác nhận giỏ hàng và thông tin thanh toán, tiến tuần tự qua Pending -> Confirmed -> Processing -> Shipping -> Completed, không bỏ bước hoặc quay lùi; Completed và Cancelled là trạng thái kết thúc. Admin và Staff có cùng quyền chuyển trạng thái đến Shipping, Shipper phụ trách các bước tiếp theo; quyền hủy trước Shipping tùy vai trò và điều kiện thanh toán, bắt buộc có lý do khi Admin/Staff hủy.
 _Avoid_: Purchase, Transaction, Checkout session
+
+**Shipper**:
+Vai trò phụ trách giao hàng và xác nhận kết quả giao của Order từ trạng thái Shipping trở đi.
+_Avoid_: Admin giao hàng, Staff giao hàng
 
 **Order Item**:
 Hàng mục sản phẩm cụ thể nằm trong một Order, lưu vết cố định thông tin tại thời điểm mua gồm Variant được chọn, đơn giá chốt, số lượng và thành tiền.
 _Avoid_: Order product, Order line, Bought item
 
+**Order Status Approval**:
+Thao tác người có quyền trực tiếp chuyển trạng thái của một Order theo quy tắc nghiệp vụ áp dụng, không qua một người đề xuất và một người phê duyệt riêng biệt.
+_Avoid_: Two-step approval, Approval request
+
 **Cancellation Reason**:
 Lý do hủy đơn hàng được ghi nhận khi Order chuyển sang trạng thái Cancelled, bắt buộc phải cung cấp khi Admin hoặc Staff can thiệp hủy đơn.
 _Avoid_: Cancel note, Reason text
+
+**Order Status History**:
+Lịch sử các lần chuyển trạng thái của một Order, ghi nhận người thực hiện, thời điểm, trạng thái trước và sau cùng lý do hủy nếu có.
+_Avoid_: Order activity feed, Approval log
+
+**Cancellation Attempt**:
+Một lần yêu cầu hủy Order có kết quả thành công hoặc thất bại; khi thất bại phải có lý do từ chối và Order không chuyển sang Cancelled.
+_Avoid_: Failed cancellation status, Cancellation transition (khi yêu cầu bị từ chối)
+
+**Order Notification**:
+Thông báo email cho khách hàng về việc giao hàng hoặc kết quả Cancellation Attempt, gồm lý do khi yêu cầu hủy thất bại.
+_Avoid_: Staff activity email, Order Status History
 
 **Reorder**:
 Hành động tạo lại giỏ hàng (Cart) từ danh sách các Variant còn tồn kho khả dụng thuộc về một Order đã hoàn tất hoặc bị hủy.

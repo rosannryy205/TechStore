@@ -15,6 +15,7 @@ export default function OrderCancelModal({
   orderCode = "",
   onClose,
   onConfirm,
+  busy = false,
 }) {
   const [selectedReason, setSelectedReason] = useState(PRESET_REASONS[0]);
   const [customReason, setCustomReason] = useState("");
@@ -28,7 +29,7 @@ export default function OrderCancelModal({
         ? customReason.trim()
         : selectedReason;
 
-    if (!finalReason) return;
+    if (!finalReason || busy) return;
     onConfirm(finalReason);
   };
 
@@ -103,6 +104,7 @@ export default function OrderCancelModal({
                   Nhập lý do chi tiết <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  maxLength={1000}
                   rows={3}
                   className="w-full rounded-xl border border-gray-200 p-3 text-xs text-[#1d1d1f] focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] outline-none"
                   placeholder="Ghi rõ lý do hủy đơn..."
@@ -128,7 +130,7 @@ export default function OrderCancelModal({
               </button>
               <button
                 type="submit"
-                disabled={isCustom && !customReason.trim()}
+                disabled={busy || (isCustom && !customReason.trim())}
                 className="px-4 py-2 rounded-xl text-xs font-medium text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
               >
                 Xác nhận hủy đơn

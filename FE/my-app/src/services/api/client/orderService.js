@@ -13,9 +13,10 @@ export const orderService = {
     return res?.data ?? [];
   },
 
-  cancelOrder: async (orderId) => {
+  cancelOrder: async (orderId, requestId) => {
     return await httpRequest(`/api/orders/${orderId}/cancel`, {
       method: "PUT",
+      body: JSON.stringify({ expected_status: "pending", request_id: requestId }),
     });
   },
 };

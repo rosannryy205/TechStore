@@ -3,6 +3,16 @@ name: 'Cancel Order - Not Found'
 order: 6000
 method: PUT
 url: 'http://localhost:3000/api/orders/999999/cancel'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "request_id": "{{$guid}}",
+      "expected_status": "pending"
+    }
 scripts:
   - type: afterResponse
     language: text/javascript

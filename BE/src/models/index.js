@@ -10,6 +10,9 @@ const Cart = require("./cartModel");
 const CartItem = require("./cartItemModel");
 const Order = require("./orderModel");
 const OrderItem = require("./orderItemsModel");
+const OrderStatusHistory = require("./orderStatusHistoryModel");
+const OrderCancellationAttempt = require("./orderCancellationAttemptModel");
+const OrderEmailOutbox = require("./orderEmailOutboxModel");
 const User = require("./userModel");
 const Review = require("./reviewModel");
 const ReviewMedia = require("./reviewMediaModel");
@@ -65,6 +68,13 @@ CartItem.belongsTo(ProductVariant, {
 // 1 User có nhiều Order
 User.hasMany(Order, { foreignKey: "user_id", as: "orders" });
 Order.belongsTo(User, { foreignKey: "user_id", as: "user" });
+
+for (const [model, alias] of [[OrderStatusHistory, "status_history"], [OrderCancellationAttempt, "cancellation_attempts"], [OrderEmailOutbox, "email_notifications"]]) {
+  Order.hasMany(model, { foreignKey: "order_id", as: alias });
+  model.belongsTo(Order, { foreignKey: "order_id", as: "order" });
+}
+OrderStatusHistory.belongsTo(User, { foreignKey: "actor_id", as: "actor" });
+OrderCancellationAttempt.belongsTo(User, { foreignKey: "actor_id", as: "actor" });
 
 // 1 Order có nhiều OrderItem
 Order.hasMany(OrderItem, { foreignKey: "order_id", as: "items" });
@@ -174,6 +184,9 @@ module.exports = {
   CartItem,
   Order,
   OrderItem,
+  OrderStatusHistory,
+  OrderCancellationAttempt,
+  OrderEmailOutbox,
   User,
   Review,
   ReviewMedia,

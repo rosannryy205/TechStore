@@ -1,0 +1,10 @@
+const router = require("express").Router();
+const orderController = require("../../controllers/admin/orderController");
+const rules = require("../../validators/adminOrderValidators");
+router.use(require("../../middleware/requireAuth"), require("../../middleware/requireOrderOperator"));
+router.get("/", rules.listRules(), rules.validate, orderController.getOrders);
+router.post("/bulk-status", rules.bulkRules(), rules.validate, orderController.bulkAdvanceOrders);
+router.get("/:id", rules.idRule(), rules.validate, orderController.getOrderDetail);
+router.patch("/:id/status", rules.statusRules(), rules.validate, orderController.advanceOrder);
+router.put("/:id/cancel", rules.cancelRules(true), rules.validate, orderController.cancelOrder);
+module.exports = router;

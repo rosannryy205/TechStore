@@ -73,6 +73,9 @@ const OrderModel = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    cancellation_reason: { type: DataTypes.STRING(1000), allowNull: true },
+    cancelled_by: { type: DataTypes.INTEGER, allowNull: true },
+    cancelled_at: { type: DataTypes.DATE, allowNull: true },
   },
   {
     tableName: "orders",

@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { formatVnd } from "@/utils/formatCurrency";
 import { formatDateVi } from "@/utils/formatDate";
+import { handleImageError } from "@/utils/imageHelper";
 import {
   ORDER_STATUS_MAP,
   ORDER_STATUS_FLOW,
@@ -35,7 +36,6 @@ export default function OrderDetailDrawer({
   onUpdateStatus,
   onOpenCancelModal,
   onOpenPrint,
-  onUpdatePaymentStatus,
 }) {
   if (!isOpen || !order) return null;
 
@@ -43,21 +43,19 @@ export default function OrderDetailDrawer({
   const isCancelled = order.order_status === "cancelled";
   const isCompleted = order.order_status === "completed";
 
-  const nextStatus =
-    currentStatusIndex !== -1 && currentStatusIndex < ORDER_STATUS_FLOW.length - 1
-      ? ORDER_STATUS_FLOW[currentStatusIndex + 1]
-      : null;
+  // Backend trả thao tác được phép, tách khỏi tập trạng thái đọc để dừng ở Shipping.
+  const nextStatus = order.next_status;
 
   const nextStatusLabel = nextStatus ? ORDER_STATUS_MAP[nextStatus]?.label : null;
 
   const statusMeta = ORDER_STATUS_MAP[order.order_status] || {
-    label: order.order_status,
+    label: "Cần kiểm tra",
     color: "text-gray-700",
     bg: "bg-gray-100",
   };
 
   const paymentMeta = PAYMENT_STATUS_MAP[order.payment_status] || {
-    label: order.payment_status,
+    label: "Cần kiểm tra",
     color: "text-gray-700",
     bg: "bg-gray-100",
   };
@@ -124,6 +122,30 @@ export default function OrderDetailDrawer({
 
           {/* ════════ BODY (SCROLLABLE) ════════ */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            {order.action_reason && <p role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">{order.action_reason}</p>}
+            {order.order_status === "shipping" && <p className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">Đơn đã bàn giao vận chuyển. Admin/Staff dừng xử lý tại đây.</p>}
+            <section className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+              <h3 className="mb-3 text-sm font-semibold">Lịch sử trạng thái</h3>
+              {!order.status_history?.length && <p className="text-xs text-gray-500">Chưa có lịch sử.</p>}
+              <ol className="space-y-3 text-xs">
+                {order.status_history?.map((entry) => <li key={entry.id} className="border-l-2 border-blue-200 pl-3">
+                  <p className="font-medium">{ORDER_STATUS_MAP[entry.from_status]?.label} → {ORDER_STATUS_MAP[entry.to_status]?.label}</p>
+                  <p className="mt-1 text-gray-500">{entry.actor?.name || `Tài khoản ${entry.actor_id}`} · {formatDateVi(entry.created_at)}</p>
+                  {entry.reason && <p className="mt-1">Lý do: {entry.reason}</p>}
+                </li>)}
+              </ol>
+            </section>
+            <section className="rounded-2xl bg-white p-5 ring-1 ring-black/5">
+              <h3 className="mb-3 text-sm font-semibold">Thông báo email</h3>
+              {!order.email_notifications?.length && <p className="text-xs text-gray-500">Chưa có thông báo email.</p>}
+              <ul className="space-y-3 text-xs">
+                {order.email_notifications?.map((email) => <li key={email.id}>
+                  <p>{({ shipping: "Đang giao", cancelled: "Hủy thành công", cancel_failed: "Hủy thất bại" })[email.payload.event]} · {({ pending: "Chờ gửi", sending: "Đang gửi", sent: "Đã gửi", failed: "Chưa gửi được sau các lần thử lại", skipped: "Thiếu địa chỉ email hợp lệ" })[email.status]}</p>
+                  {email.payload.reason && <p className="mt-1 text-gray-500">Lý do: {email.payload.reason}</p>}
+                  <p className="mt-1 text-gray-500">{formatDateVi(email.created_at)}</p>
+                </li>)}
+              </ul>
+            </section>
             {/* 1. STEPPER VÒNG ĐỜI TRẠNG THÁI */}
             <div className="bg-white p-5 rounded-2xl ring-1 ring-black/5 shadow-xs">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
@@ -138,13 +160,8 @@ export default function OrderDetailDrawer({
                   </div>
                   <p className="mt-2 text-red-600">
                     <span className="font-semibold">Lý do hủy:</span>{" "}
-                    {order.cancellation_reason || "Admin hủy theo yêu cầu"}
+                    {order.cancellation_reason || "Chưa có lý do được ghi nhận"}
                   </p>
-                  {order.cancelled_by && (
-                    <p className="mt-1 text-gray-500">
-                      Người thực hiện: {order.cancelled_by}
-                    </p>
-                  )}
                   <div className="mt-2 text-[11px] text-gray-500 italic">
                     * Số lượng tồn kho (Stock) của các biến thể đã được tự động hoàn trả.
                   </div>
@@ -203,13 +220,13 @@ export default function OrderDetailDrawer({
                   {/* Nút thao tác chuyển trạng thái */}
                   {!isCompleted && (
                     <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between gap-3">
-                      <button
+                      {order.can_cancel && <button
                         type="button"
                         onClick={() => onOpenCancelModal(order.id)}
                         className="text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition-colors cursor-pointer"
                       >
                         Hủy đơn hàng
-                      </button>
+                      </button>}
 
                       {nextStatus && (
                         <button
@@ -243,10 +260,7 @@ export default function OrderDetailDrawer({
                       src={item.image}
                       alt={item.product_name}
                       className="h-14 w-14 rounded-xl object-cover ring-1 ring-black/5 bg-gray-50 shrink-0"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=100&auto=format&fit=crop&q=80";
-                      }}
+                  onError={handleImageError}
                     />
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-[#1d1d1f] leading-snug">
@@ -356,16 +370,6 @@ export default function OrderDetailDrawer({
                       {paymentMeta.label}
                     </span>
 
-                    {/* Quick switch payment status */}
-                    {order.payment_status !== "paid" && (
-                      <button
-                        type="button"
-                        onClick={() => onUpdatePaymentStatus(order.id, "paid")}
-                        className="text-[11px] font-medium text-[#0066cc] hover:underline cursor-pointer"
-                      >
-                        Đánh dấu Đã thanh toán
-                      </button>
-                    )}
                   </div>
                 </div>
               </div>

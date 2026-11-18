@@ -1,0 +1,28 @@
+$kind: http-request
+name: 'Cancel Order - Authenticated'
+order: 7000
+method: PUT
+url: 'http://localhost:3000/api/orders/{{order_id}}/cancel'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "request_id": "{{customer_cancel_request_id}}",
+      "expected_status": "pending"
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if (!pm.collectionVariables.get("customer_cancel_request_id")) {
+        pm.collectionVariables.set("customer_cancel_request_id", pm.variables.replaceIn("{{$guid}}"));
+      }
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Owner cancellation succeeds or returns reason", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 409]);
+      });

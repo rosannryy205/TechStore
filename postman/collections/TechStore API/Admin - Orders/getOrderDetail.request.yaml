@@ -1,0 +1,15 @@
+$kind: http-request
+name: 'Get Order Detail'
+order: 2000
+method: GET
+url: 'http://localhost:3000/api/admin/orders/{{order_id}}'
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Detail includes history and email status", function () {
+        pm.response.to.have.status(200);
+        const order = pm.response.json().data;
+        pm.expect(order.status_history).to.be.an("array");
+        pm.expect(order.email_notifications).to.be.an("array");
+      });

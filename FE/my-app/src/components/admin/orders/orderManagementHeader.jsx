@@ -1,9 +1,9 @@
-import { ArrowPathIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 export default function OrderManagementHeader({
   totalOrders = 0,
-  onResetData,
   onExportCsv,
+  onRefresh,
 }) {
   return (
     <div className="sm:flex sm:items-center sm:justify-between mb-8">
@@ -22,16 +22,7 @@ export default function OrderManagementHeader({
       </div>
 
       <div className="mt-4 sm:mt-0 flex items-center gap-2 sm:gap-3 flex-wrap">
-        <button
-          type="button"
-          onClick={onResetData}
-          title="Nạp lại 16 đơn hàng mẫu ban đầu"
-          className="inline-flex items-center justify-center rounded-full bg-white border border-gray-200 px-4 py-2.5 text-[14px] font-medium text-gray-700 shadow-sm hover:bg-[#f5f5f7] hover:border-gray-300 transition-all cursor-pointer"
-        >
-          <ArrowPathIcon className="-ml-0.5 mr-1.5 h-4 w-4 text-gray-500" aria-hidden="true" />
-          Đặt lại dữ liệu mẫu
-        </button>
-
+        <button type="button" onClick={onRefresh} className="inline-flex min-h-11 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm text-gray-700"><ArrowPathIcon className="h-4 w-4" />Tải lại</button>
         <button
           type="button"
           onClick={onExportCsv}
