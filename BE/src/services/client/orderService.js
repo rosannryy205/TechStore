@@ -14,6 +14,7 @@ const {
   Cart,
   VariantAttributeValue,
   VariantAttribute,
+  OrderStatusHistory,
 } = require("../../models");
 const cartService = require("./cartService");
 const {
@@ -244,6 +245,7 @@ async function createOrder({
       });
 
       const plain = createdOrder.get({ plain: true });
+      plain.order_code = plain.order_code || `TS-${plain.id}`;
       // Flatten variant attributes cho backward compatibility
       if (plain.items) {
         for (const item of plain.items) {
@@ -279,6 +281,8 @@ async function getOrdersByUser(userId) {
       "order_status",
       "note",
       "created_at",
+      "cancellation_reason",
+      "cancelled_at",
     ],
     include: [
       {
@@ -308,8 +312,11 @@ async function getOrdersByUser(userId) {
     order: [["created_at", "DESC"]],
   });
 
+  const history = orders.length ? await OrderStatusHistory.findAll({ where: { order_id: orders.map((order) => order.id) }, attributes: ["order_id", "to_status", "created_at"], order: [["id", "DESC"]], raw: true }) : [];
   return orders.map((o) => {
     const plain = o.get({ plain: true });
+    plain.order_code = plain.order_code || `TS-${plain.id}`;
+    plain.status_changed_at = history.find((entry) => entry.order_id === plain.id && entry.to_status === plain.order_status)?.created_at || null;
     // Flatten variant attributes cho backward compatibility
     if (plain.items) {
       for (const item of plain.items) {
@@ -328,57 +335,9 @@ async function getOrdersByUser(userId) {
  * @param {number} userId
  * @returns {Promise<Object>} updated order
  */
-async function cancelOrder({ orderId, userId }) {
-  return sequelize.transaction(async (t) => {
-    const order = await Order.findOne({
-      where: { id: orderId, user_id: userId },
-      attributes: ["id", "order_status", "payment_status"],
-      transaction: t,
-    });
-
-    if (!order) {
-      const err = new Error("Order not found");
-      err.statusCode = 404;
-      throw err;
-    }
-
-    if (order.order_status !== "pending") {
-      const err = new Error(
-        `Cannot cancel order in "${order.order_status}" status. Only pending orders can be cancelled.`,
-      );
-      err.statusCode = 400;
-      throw err;
-    }
-
-    // Lấy order items để khôi phục stock
-    const orderItems = await OrderItem.findAll({
-      where: { order_id: orderId },
-      attributes: ["product_variant_id", "quantity"],
-      transaction: t,
-    });
-
-    // Khôi phục stock cho từng variant
-    for (const item of orderItems) {
-      await ProductVariant.update(
-        {
-          stock: sequelize.literal(`stock + ${Number(item.quantity)}`),
-          sold_count: sequelize.literal(
-            `sold_count - ${Number(item.quantity)}`,
-          ),
-        },
-        {
-          where: { id: item.product_variant_id },
-          transaction: t,
-        },
-      );
-    }
-
-    // Cập nhật trạng thái đơn hàng
-    order.order_status = "cancelled";
-    await order.save({ transaction: t, fields: ["order_status"] });
-
-    return order.get({ plain: true });
-  });
+async function cancelOrder({ orderId, userId, expectedStatus, requestId, reason }) {
+  // Dùng chung quy tắc với quản trị, nhưng giới hạn khách chỉ hủy đơn của mình tại Pending.
+  return require("../orderStatusService").cancelOrder({ orderId, actorId: userId, expectedStatus, requestId, reason });
 }
 
 module.exports = {

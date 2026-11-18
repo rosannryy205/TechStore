@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/authContext";
 import { orderService } from "@/services/api/client/orderService";
@@ -22,6 +22,8 @@ export function useUserProfile() {
   const [cancellingId, setCancellingId] = useState(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingCancelId, setPendingCancelId] = useState(null);
+  const cancelRequests = useRef(new Map());
+  const cancelBusy = useRef(false);
 
   const [formName, setFormName] = useState(user?.name || "");
   const [formPhone, setFormPhone] = useState(user?.phone || "");
@@ -93,17 +95,25 @@ export function useUserProfile() {
   }, []);
 
   const executeCancelOrder = useCallback(async () => {
-    if (!pendingCancelId) return;
+    if (!pendingCancelId || cancelBusy.current) return;
+    cancelBusy.current = true;
     try {
       setCancellingId(pendingCancelId);
       setConfirmOpen(false);
       setOrdersError(null);
-      await orderService.cancelOrder(pendingCancelId);
+      if (!cancelRequests.current.has(pendingCancelId)) cancelRequests.current.set(pendingCancelId, crypto.randomUUID());
+      await orderService.cancelOrder(pendingCancelId, cancelRequests.current.get(pendingCancelId));
+      cancelRequests.current.delete(pendingCancelId);
       await fetchOrders();
     } catch (e) {
+      // Đơn có thể vừa được nhân viên duyệt: tải lại dữ liệu trước khi giữ thông báo lỗi.
+      if (e?.status === 409) await fetchOrders();
       setOrdersError(e?.message || "Failed to cancel order.");
+      // Giữ mã khi mất kết nối để retry không hủy/hoàn kho/gửi email lần nữa.
+      if ((e?.status && e.status < 500) || e?.payload?.code === "CANCELLATION_FAILED") cancelRequests.current.delete(pendingCancelId);
     } finally {
       setCancellingId(null);
+      cancelBusy.current = false;
       setPendingCancelId(null);
     }
   }, [pendingCancelId, fetchOrders]);

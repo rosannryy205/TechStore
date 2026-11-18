@@ -55,9 +55,7 @@ function AdminLayoutInner() {
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
-  }, [location.pathname, location.search]);
-
-  const gateOutlet = !shouldShow;
+  }, [location.pathname]);
 
   return (
     <>
@@ -93,7 +91,8 @@ function AdminLayoutInner() {
             flexDirection: "column",
           }}
         >
-          {gateOutlet ? <Outlet /> : null}
+          {/* Giữ màn hình mounted khi overlay hiện để đổi tab/query không mất filter hoặc drawer. */}
+          <Outlet />
         </main>
 
         <FooterAdmin />

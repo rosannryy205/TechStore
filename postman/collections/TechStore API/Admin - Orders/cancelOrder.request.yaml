@@ -1,0 +1,30 @@
+$kind: http-request
+name: 'Cancel Order'
+order: 5000
+method: PUT
+url: 'http://localhost:3000/api/admin/orders/{{order_id}}/cancel'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "request_id": "{{cancel_request_id}}",
+      "expected_status": "pending",
+      "reason": "Khách hàng yêu cầu hủy đơn"
+    }
+scripts:
+  - type: beforeRequest
+    language: text/javascript
+    code: |-
+      if (!pm.collectionVariables.get("cancel_request_id")) {
+        pm.collectionVariables.set("cancel_request_id", pm.variables.replaceIn("{{$guid}}"));
+      }
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Cancellation succeeds or returns a public rejection reason", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 409]);
+        if (pm.response.code === 409) pm.expect(pm.response.json().message).to.be.a("string");
+      });

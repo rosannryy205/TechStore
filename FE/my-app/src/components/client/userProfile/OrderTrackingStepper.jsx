@@ -52,6 +52,10 @@ const TRACKING_STEPS = [
 export default function OrderTrackingStepper({ order, variant = "mini" }) {
   if (!order) return null;
 
+  if (!ORDER_STATUS_FLOW.includes(order.order_status) && order.order_status !== "cancelled") {
+    return <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">Cần kiểm tra trạng thái đơn hàng.</p>;
+  }
+
   const isCancelled = order.order_status === "cancelled";
   const currentIndex = isCancelled ? -1 : ORDER_STATUS_FLOW.indexOf(order.order_status);
 
@@ -63,7 +67,7 @@ export default function OrderTrackingStepper({ order, variant = "mini" }) {
           <XMarkIcon className="w-4 h-4 shrink-0 text-rose-600 stroke-2" />
           <span className="font-medium">Đơn hàng đã hủy</span>
           <span className="text-rose-500/80 ml-auto text-[11px]">
-            {formatDateVi(order.updated_at || order.created_at)}
+            {order.cancelled_at || order.status_changed_at ? formatDateVi(order.cancelled_at || order.status_changed_at) : "Chưa có thời điểm ghi nhận"}
           </span>
         </div>
       );
@@ -141,11 +145,11 @@ export default function OrderTrackingStepper({ order, variant = "mini" }) {
                 Đơn hàng đã được hủy
               </h4>
               <span className="text-xs text-zinc-400">
-                {formatDateVi(order.updated_at || order.created_at)}
+                {order.cancelled_at || order.status_changed_at ? formatDateVi(order.cancelled_at || order.status_changed_at) : "Chưa có thời điểm ghi nhận"}
               </span>
             </div>
             <p className="mt-1 text-xs text-zinc-300 leading-relaxed">
-              Đơn hàng này đã được xác nhận hủy an toàn. Số lượng tồn kho của các sản phẩm trong đơn đã được tự động hoàn lại hệ thống.
+              {order.cancellation_reason ? `Lý do hủy: ${order.cancellation_reason}` : "Đơn hàng đã hủy. Chưa có lý do được ghi nhận."}
             </p>
           </div>
         </div>
@@ -213,7 +217,7 @@ export default function OrderTrackingStepper({ order, variant = "mini" }) {
                     {idx === 0
                       ? formatDateVi(order.created_at)
                       : isCurrent
-                        ? formatDateVi(order.updated_at || order.created_at)
+                        ? order.status_changed_at ? formatDateVi(order.status_changed_at) : "Chưa có thời điểm ghi nhận"
                         : isCompleted
                           ? "Hoàn tất"
                           : "Dự kiến"}

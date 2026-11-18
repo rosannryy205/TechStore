@@ -1,0 +1,22 @@
+$kind: http-request
+name: 'Advance Order'
+order: 3000
+method: PATCH
+url: 'http://localhost:3000/api/admin/orders/{{order_id}}/status'
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "expected_status": "pending",
+      "target_status": "confirmed"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Pending order advances or stale request is rejected", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 409]);
+      });

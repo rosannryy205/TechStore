@@ -20,14 +20,17 @@ const createTransport = () => {
   return nodemailer.createTransport({
     host: SMTP_HOST,
     port: Number(SMTP_PORT),
-    secure: false, // Gmail SMTP dùng STARTTLS
+    secure: Number(SMTP_PORT) === 465,
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 45000,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
     tls: {
-      // tránh lỗi certificate trong dev
-      rejectUnauthorized: false,
+      // Không bỏ kiểm tra chứng chỉ khi gửi OTP hoặc thông tin đơn hàng.
+      rejectUnauthorized: true,
     },
   });
 };
@@ -90,6 +93,7 @@ const sendVerificationEmail = async ({ toEmail, code }) => {
 };
 
 module.exports = {
+  createTransport,
   sendVerificationEmail,
 };
 

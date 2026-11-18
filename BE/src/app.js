@@ -61,6 +61,7 @@ app.use("/api/cart", cartRoutes);
 
 // Định nghĩa route cho đơn hàng
 app.use("/api/orders", orderRoutes);
+app.use("/api/admin/orders", require("./routes/admin/orderRoutes"));
 
 // Định nghĩa route cho đánh giá sản phẩm (comment)
 app.use("/api/reviews", reviewRoutes);

@@ -13,6 +13,8 @@ import {
   ORDER_STATUS_MAP,
   PAYMENT_METHOD_MAP,
   PAYMENT_STATUS_MAP,
+  canCustomerCancelOrder,
+  needsOrderReview,
 } from "@/constants/orderStatus";
 import { formatVnd } from "@/utils/formatCurrency";
 import { formatDateVi } from "@/utils/formatDate";
@@ -32,21 +34,21 @@ export default function OrderTrackingDrawer({
 
   if (!isOpen || !order) return null;
 
-  const statusInfo = ORDER_STATUS_MAP[order.order_status] || {
-    label: order.order_status,
+  const statusInfo = (!needsOrderReview(order) && ORDER_STATUS_MAP[order.order_status]) || {
+    label: "Cần kiểm tra",
     color: "text-zinc-600",
     bg: "bg-zinc-100",
     border: "border-zinc-200",
   };
 
   const paymentMethodInfo = PAYMENT_METHOD_MAP[order.payment_method] || {
-    label: order.payment_method?.toUpperCase() || "COD",
+    label: "Cần kiểm tra",
     color: "text-zinc-700",
     bg: "bg-zinc-100",
   };
 
   const paymentStatusInfo = PAYMENT_STATUS_MAP[order.payment_status] || {
-    label: order.payment_status || "Chờ xử lý",
+    label: "Cần kiểm tra",
     color: "text-amber-700",
     bg: "bg-amber-50",
   };
@@ -58,7 +60,7 @@ export default function OrderTrackingDrawer({
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const canCancel = order.order_status === "pending";
+  const canCancel = canCustomerCancelOrder(order);
   const canReorder = order.order_status === "completed" || order.order_status === "cancelled";
 
   return (

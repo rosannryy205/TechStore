@@ -19,6 +19,7 @@ export default function OrderPrintModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
+      <style>{`@media print { body * { visibility: hidden; } #print-slip, #print-slip * { visibility: visible; } #print-slip { position: fixed; inset: 0; width: 100%; } }`}</style>
       {/* Backdrop — ẩn khi in */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity print:hidden"
@@ -69,28 +70,11 @@ export default function OrderPrintModal({
                     FLAGSHIP
                   </span>
                 </div>
-                <p className="text-xs text-gray-600 mt-1">
-                  Địa chỉ: 123 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM
-                </p>
-                <p className="text-xs text-gray-600">
-                  Hotline: 1800 6868 • Website: www.techstore.vn
-                </p>
               </div>
 
               {/* Mã vạch đơn hàng Barcode CSS */}
               <div className="text-right">
                 <div className="inline-block p-1 bg-white border border-gray-300 rounded">
-                  <div className="flex items-center justify-center gap-[2px] h-8 px-2">
-                    {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 2, 3, 1, 4, 2, 1, 3, 2].map(
-                      (w, idx) => (
-                        <div
-                          key={idx}
-                          className="bg-black h-full"
-                          style={{ width: `${w}px` }}
-                        />
-                      )
-                    )}
-                  </div>
                   <div className="text-center font-mono font-bold text-xs tracking-wider mt-1 text-gray-900">
                     {order.order_code}
                   </div>
@@ -222,14 +206,12 @@ export default function OrderPrintModal({
                 <p className="font-bold text-gray-900">Người lập phiếu</p>
                 <p className="text-[11px] text-gray-500 mt-0.5">(Ký, ghi rõ họ tên)</p>
                 <div className="h-16" />
-                <p className="font-semibold text-gray-800">TechStore Admin</p>
               </div>
 
               <div>
                 <p className="font-bold text-gray-900">Nhân viên đóng gói</p>
                 <p className="text-[11px] text-gray-500 mt-0.5">(Ký, ghi rõ họ tên)</p>
                 <div className="h-16" />
-                <p className="font-semibold text-gray-800">Bộ phận kho vận</p>
               </div>
 
               <div>
