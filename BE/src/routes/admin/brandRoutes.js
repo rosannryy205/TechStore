@@ -7,6 +7,10 @@ const {
   getAllBrandsController,
   createBrandController 
 } = require("../../controllers/admin/brandController");
+const requireAuth = require("../../middleware/requireAuth");
+const requireCatalogOperator = require("../../middleware/requireCatalogOperator");
+
+router.use(requireAuth, requireCatalogOperator);
 
 // Lấy danh sách thương hiệu
 router.get("/", getAllBrandsController);
@@ -19,9 +23,4 @@ router.post(
   handleValidationErrors,
   createBrandController
 );
-router.get(
-  "/",
-  getAllBrandsController
-);
-
 module.exports = router;

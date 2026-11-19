@@ -2,7 +2,7 @@
 
 Trạng thái: bản tổng hợp sau phỏng vấn, chờ xác nhận cách hiểu trước khi triển khai. Các file, API, schema và bài kiểm thử dưới đây là kế hoạch, chưa được tạo hoặc chạy như chức năng hoàn chỉnh.
 
-Căn cứ: [quyết định Q1–Q24](./orderStatusApprovalInterview.md), [GLOSSARY.md](../GLOSSARY.md), [ADR0004](./adr/0004-order-shipping-role-boundary.md) và [nhật ký thay đổi](./2026-11-14-duyet-trang-thai-don-hang.md). Khi có khác biệt với đề xuất cũ, dùng bản chốt hiện hành trong tài liệu này và lời nhắn mới nhất của người dùng.
+Căn cứ: [quyết định Q1–Q24](../interviews/2026-11-14-order-status-approval-interview.md), [GLOSSARY.md](../../GLOSSARY.md), [ADR0004](../adr/0004-order-shipping-role-boundary.md) và [báo cáo thay đổi](../code-changes/2026-11-14-order-status-approval-change-log.md). Khi có khác biệt với đề xuất cũ, dùng bản chốt hiện hành trong tài liệu này và lời nhắn mới nhất của người dùng.
 
 ## 1. Phạm vi bàn giao
 

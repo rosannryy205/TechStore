@@ -1,12 +1,12 @@
 # Phỏng vấn chức năng duyệt trạng thái đơn hàng
 
-Trạng thái: đã ghi nhận các quyết định Q1–Q24 và hoàn thành [kế hoạch triển khai](./orderStatusApprovalPlan.md), chờ xác nhận cách hiểu cuối cùng. Chưa bắt đầu triển khai mã nguồn.
+Trạng thái: đã ghi nhận các quyết định Q1–Q24 và hoàn thành [kế hoạch triển khai](../task-plans/2026-11-14-order-status-approval-plan.md), chờ xác nhận cách hiểu cuối cùng. Chưa bắt đầu triển khai mã nguồn.
 
 ## Mục tiêu và cách làm
 
 Làm rõ ý nghĩa của “duyệt”, phạm vi vòng đời Order và quy tắc nghiệp vụ trước khi lập kế hoạch triển khai theo từng tầng. Phỏng vấn theo cây quyết định: mỗi vòng chỉ hỏi những quyết định có đủ tiền đề; câu trả lời của người dùng mở các nhánh tiếp theo. Các đề xuất bên dưới chưa phải yêu cầu được chấp nhận.
 
-Ghi quyết định ngay khi được xác nhận. Cập nhật [GLOSSARY.md](../GLOSSARY.md) khi thuật ngữ được thống nhất; chỉ ghi ADR cho quyết định khó đảo ngược, cần giải thích bối cảnh và có đánh đổi thực sự. Khi hết câu hỏi, trình kế hoạch cùng tiêu chí nghiệm thu để người dùng xác nhận cách hiểu trước khi triển khai, theo skill [grilling](../.agents/skills/grilling/SKILL.md).
+Ghi quyết định ngay khi được xác nhận. Cập nhật [GLOSSARY.md](../../GLOSSARY.md) khi thuật ngữ được thống nhất; chỉ ghi ADR cho quyết định khó đảo ngược, cần giải thích bối cảnh và có đánh đổi thực sự. Khi hết câu hỏi, trình kế hoạch cùng tiêu chí nghiệm thu để người dùng xác nhận cách hiểu trước khi triển khai, theo skill [grilling](../../.agents/skills/grilling/SKILL.md).
 
 ## Hiện trạng đã khảo sát
 
@@ -79,7 +79,7 @@ Các nhánh là lịch phỏng vấn dự kiến; không mặc định mọi tí
 - **Q22:** Ưu tiên email trên Order; nếu bỏ trống dùng email tài khoản đặt đơn. Thiếu địa chỉ hợp lệ thì không chặn nghiệp vụ, ghi rõ thông báo không gửi được vì thiếu email.
 - **Q23 (theo lời nhắn mới nhất, thay thế đề xuất cũ):** Gửi khi chuyển Shipping, khi giao thành công, khi hủy thành công và khi hủy thất bại; hủy thất bại phải kèm lý do. Không gửi ở Confirmed/Processing. Email giao thành công gắn với Completed của Shipper trong nâng cấp sau, không mở quyền Completed cho Admin/Staff hoặc tạo một luồng hoàn tất trong bản hiện tại. Email tiếng Việt, mã đơn và thông tin kết quả, không công khai tên nhân viên/lịch sử nội bộ.
 - **Q24:** Lỗi gửi email không rollback Order hoặc tồn kho. Lưu tình trạng gửi riêng, tự retry có giới hạn và cho quản trị thấy tình trạng chưa gửi được. Không chuyển trạng thái Order lần nữa chỉ để gửi email.
-- **Nhật ký bàn giao:** Áp dụng quy tắc Change Documentation người dùng bổ sung. Tài liệu của tác vụ này là [2026-11-14-duyet-trang-thai-don-hang.md](./2026-11-14-duyet-trang-thai-don-hang.md). Ghi vị trí và kết quả kiểm chứng thực tế; không ghi thay đổi dự kiến thành đã thực hiện.
+- **Nhật ký bàn giao:** Áp dụng quy tắc Change Documentation người dùng bổ sung. Tài liệu của tác vụ này là [2026-11-14-order-status-approval-change-log.md](../code-changes/2026-11-14-order-status-approval-change-log.md). Ghi vị trí và kết quả kiểm chứng thực tế; không ghi thay đổi dự kiến thành đã thực hiện.
 
 ## Quy tắc bắt buộc: Change Documentation
 
@@ -104,7 +104,7 @@ Quy trình hoàn thành: triển khai → kiểm tra diff và kiểm thử phù 
 - Q23 dùng lời nhắn cuối cùng, có cả thông báo giao thành công thuộc nâng cấp Shipper sau này. Không dùng bản tin đã bị người dùng thay thế thiếu sự kiện giao thành công.
 - Các lựa chọn triển khai API, transaction, khóa dữ liệu, migration và cách kiểm thử được lập kế hoạch dựa trên quyết định đã chốt, không yêu cầu người dùng chọn chi tiết kỹ thuật thường lệ.
 
-Không còn câu hỏi nghiệp vụ mở trong cây phỏng vấn hiện tại. Bước tiếp theo là đối chiếu [kế hoạch triển khai](./orderStatusApprovalPlan.md) và xác nhận cách hiểu trước khi sửa code, theo skill grilling.
+Không còn câu hỏi nghiệp vụ mở trong cây phỏng vấn hiện tại. Bước tiếp theo là đối chiếu [kế hoạch triển khai](../task-plans/2026-11-14-order-status-approval-plan.md) và xác nhận cách hiểu trước khi sửa code, theo skill grilling.
 
 ## Vòng 2 — Đã chốt toàn bộ
 
@@ -176,4 +176,4 @@ Người dùng đồng ý Q15–Q21 với hai điều chỉnh rõ ràng: Q20 th�
 | Q23 | Thời điểm và nội dung email | Người dùng điều chỉnh: chỉ thông báo Shipping, giao thành công, hủy thành công hoặc hủy thất bại kèm lý do hủy thất bại. Không gửi Confirmed/Processing. Giao thành công thuộc nâng cấp Shipper sau. Đơn hủy thất bại vẫn có thông báo kết quả yêu cầu, không phải lịch sử chuyển trạng thái. Request lặp cùng một lần xử lý không tạo lại sự kiện email. |
 | Q24 | Gửi email thất bại | Trạng thái đơn đã cập nhật vẫn giữ nguyên, không rollback đơn hoặc kho vì lỗi SMTP. Lưu tình trạng gửi riêng để tự thử lại có giới hạn, quản trị thấy trạng thái gửi lỗi nếu chưa gửi được; không yêu cầu chuyển trạng thái Order lại để gửi email. Chi tiết retry/transport là lựa chọn kỹ thuật khi lập kế hoạch. |
 
-Đã chốt Q22–Q24. Phân biệt hai tình huống: hủy thất bại là kết quả yêu cầu hủy và cần email có lý do; gửi email thất bại là lỗi kênh thông báo, không thay đổi kết quả hủy. [Kế hoạch triển khai](./orderStatusApprovalPlan.md) xử lý riêng hai loại kết quả này, ghi rõ giới hạn khi yêu cầu chưa tới BE hoặc hạ tầng chưa ghi nhận được kết quả, không coi client timeout là bằng chứng đơn chưa hủy.
+Đã chốt Q22–Q24. Phân biệt hai tình huống: hủy thất bại là kết quả yêu cầu hủy và cần email có lý do; gửi email thất bại là lỗi kênh thông báo, không thay đổi kết quả hủy. [Kế hoạch triển khai](../task-plans/2026-11-14-order-status-approval-plan.md) xử lý riêng hai loại kết quả này, ghi rõ giới hạn khi yêu cầu chưa tới BE hoặc hạ tầng chưa ghi nhận được kết quả, không coi client timeout là bằng chứng đơn chưa hủy.

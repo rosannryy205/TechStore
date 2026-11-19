@@ -1,10 +1,10 @@
 # Kế hoạch tìm kiếm sản phẩm phía Client
 
-Trạng thái: đã hoàn tất triển khai FE/BE, test, lint, build và review Standards/Spec. Nhật ký file/vị trí thực tế, lý do thay đổi và kết quả kiểm tra nằm trong clientProductSearchChangeLog.md.
+Trạng thái: đã hoàn tất triển khai FE/BE, test, lint, build và review Standards/Spec. Nhật ký file/vị trí thực tế, lý do thay đổi và kết quả kiểm tra nằm trong [2026-11-14-product-search-change-log.md](../code-changes/2026-11-14-product-search-change-log.md).
 
 ## Mục tiêu
 
-Triển khai tìm kiếm sản phẩm dành cho người mua theo source hiện tại và yêu cầu đã thống nhất. Phân biệt Product, Variant, Product Search và Product Filter theo [GLOSSARY.md](../GLOSSARY.md). Nhật ký vị trí file, công dụng và lý do thay đổi nằm tại [clientProductSearchChangeLog.md](./clientProductSearchChangeLog.md).
+Triển khai tìm kiếm sản phẩm dành cho người mua theo source hiện tại và yêu cầu đã thống nhất. Phân biệt Product, Variant, Product Search và Product Filter theo [GLOSSARY.md](../../GLOSSARY.md). Nhật ký vị trí file, công dụng và lý do thay đổi nằm tại [2026-11-14-product-search-change-log.md](../code-changes/2026-11-14-product-search-change-log.md).
 
 ## Bản tổng hợp đã thống nhất
 
@@ -100,7 +100,7 @@ Yêu cầu đã chốt trực tiếp từ người dùng: từ khóa có ký t�
 23. **Tất cả kết quả trong hộp thoại — đã chốt:** tải theo đợt 12 Product; cuộn hoặc tải thêm cho tới khi hết kết quả, có tổng số và nút Xem tất cả. Mọi Product khớp đều có thể xem, không tải toàn bộ tập khớp trong một request. Mỗi khi từ khóa thay đổi thì bắt đầu lại từ đợt đầu, không nối kết quả khác từ khóa.
 24. **Vai trò hộp thoại và trang kết quả — đã chốt:** gõ để xem trực tiếp trong hộp thoại; bấm Product mở trang chi tiết; Enter/nút Xem tất cả mở `/products?q=...` để dùng bộ lọc, sort và phân trang. Từ khóa nháp trong hộp thoại không ghi URL hay lịch sử sau từng phím; trang kết quả vẫn áp dụng tiêu chí đã submit, sửa từ khóa tại đó giữ bộ lọc như Q11.
 
-Người dùng đồng ý Q22–Q24 và bổ sung yêu cầu lưu một file Markdown trong docs ghi tên file, vị trí sửa/thêm, công dụng và lý do. Nhật ký được lưu tại [clientProductSearchChangeLog.md](./clientProductSearchChangeLog.md).
+Người dùng đồng ý Q22–Q24 và bổ sung yêu cầu lưu một file Markdown trong docs ghi tên file, vị trí sửa/thêm, công dụng và lý do. Nhật ký được lưu tại [2026-11-14-product-search-change-log.md](../code-changes/2026-11-14-product-search-change-log.md).
 
 **Cách thực hiện:** dùng native Fetch hiện có để gọi API không tải lại trang (cách gọi bất đồng bộ thường gọi là AJAX); debounce khoảng 300 ms sau khi dừng gõ, bắt đầu từ một ký tự hợp lệ; không yêu cầu thư viện mới hoặc WebSocket. Hủy request bằng AbortController và dùng định danh từ khóa/lượt request để bỏ phản hồi cũ, kể cả khi hủy không kịp. Không gọi API lúc IME đang composition; khi composition kết thúc mới kiểm tra/gửi từ khóa hoàn chỉnh. Khi query rỗng, không hợp lệ hoặc đóng hộp thoại: hủy timer/request và loại kết quả cũ; query mới đang chờ không hiển thị kết quả query cũ như thể đang khớp. Debounce 300 ms là cấu hình khởi đầu để kiểm tra, không phải kết quả đo đạc tối ưu đã chứng minh.
 
@@ -187,7 +187,7 @@ Các kiểm chứng và test ở bảng này là công việc dự kiến của 
 - Chú thích rõ các đoạn chuẩn hóa/tách từ khóa, ghép điều kiện tìm kiếm, điều kiện xuất hiện/hết hàng, tính giá, đồng bộ URL và chống kết quả request cũ ghi đè nếu được triển khai.
 - Với hàm xử lý chính, mô tả đầu vào/đầu ra và ví dụ khi cần; comment phải khớp hành vi cuối cùng của code.
 - Khi nghiệm thu, kiểm tra cả tính dễ hiểu của comment và tính đúng của chức năng. Yêu cầu này được bổ sung trực tiếp từ người dùng, không phải suy luận từ skill.
-- Duy trì một file [clientProductSearchChangeLog.md](./clientProductSearchChangeLog.md) trong docs: liệt kê từng file sửa/thêm, vị trí bằng tên hàm/component/mục và số dòng sau khi hoàn tất, giải thích công dụng và lý do, kèm cách kiểm tra. Phân biệt việc đã thực hiện với thay đổi mới dự kiến; cập nhật nhật ký khi triển khai và sau lần chỉnh cuối để số dòng đúng với source.
+- Duy trì một file [2026-11-14-product-search-change-log.md](../code-changes/2026-11-14-product-search-change-log.md) trong docs: liệt kê từng file sửa/thêm, vị trí bằng tên hàm/component/mục và số dòng sau khi hoàn tất, giải thích công dụng và lý do, kèm cách kiểm tra. Phân biệt việc đã thực hiện với thay đổi mới dự kiến; cập nhật nhật ký khi triển khai và sau lần chỉnh cuối để số dòng đúng với source.
 
 ## Quyết định đã chốt
 

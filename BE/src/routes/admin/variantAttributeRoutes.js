@@ -6,6 +6,10 @@ const {
   addOptionRules,
   handleValidationErrors,
 } = require("../../validators/variantAttributeValidators");
+const requireAuth = require("../../middleware/requireAuth");
+const requireCatalogOperator = require("../../middleware/requireCatalogOperator");
+
+router.use(requireAuth, requireCatalogOperator);
 
 // Attributes CRUD
 router.get("/", controller.getAllAttributes);
