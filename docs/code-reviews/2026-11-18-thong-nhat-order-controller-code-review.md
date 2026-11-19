@@ -12,16 +12,16 @@ Code trước tác vụ đã có đủ năm handler nhưng dùng `exports.list/d
 - Hai file code vốn đã tồn tại trong working tree từ tác vụ triển khai trước, dù Git vẫn báo untracked. Vì vậy trạng thái trong báo cáo này là **Sửa**, không nhận việc tạo hai file là công việc mới của ngày 18/11.
 - Đã đọc status/diff staged và danh sách tham chiếu. Không có thay đổi staged. So sánh trước/sau dùng snapshot hai file lấy ngay trước khi sửa, qua `git diff --no-index`; không lấy toàn bộ thay đổi khác đang có trong workspace làm thay đổi của lượt này.
 - `package-lock.json` ở gốc và những file triển khai khác đã có thay đổi từ trước, không thuộc phạm vi chuẩn hóa controller.
-- Cập nhật mục controller và các tham chiếu trong [báo cáo triển khai trước](./2026-11-14-duyet-trang-thai-don-hang.md) để tên hàm trong tài liệu tiếp tục khớp code.
+- Cập nhật mục controller và các tham chiếu trong [báo cáo triển khai trước](../code-changes/2026-11-14-order-status-approval-change-log.md) để tên hàm trong tài liệu tiếp tục khớp code.
 
 ## B. Danh sách file mã nguồn thay đổi
 
 | File | Loại thay đổi trong tác vụ này | Thành phần thay đổi | Mục đích |
 | --- | --- | --- | --- |
-| [BE/src/controllers/admin/orderController.js](../BE/src/controllers/admin/orderController.js) | Sửa | Import alias, năm handler, destructuring, response, `module.exports` | Thống nhất cách trình bày với Category và đặt tên handler rõ trách nhiệm |
-| [BE/src/routes/admin/orderRoutes.js](../BE/src/routes/admin/orderRoutes.js) | Sửa | Biến `orderController` và năm tham chiếu callback | Nối router với các export mới, giữ nguyên contract HTTP và middleware |
+| [BE/src/controllers/admin/orderController.js](../../BE/src/controllers/admin/orderController.js) | Sửa | Import alias, năm handler, destructuring, response, `module.exports` | Thống nhất cách trình bày với Category và đặt tên handler rõ trách nhiệm |
+| [BE/src/routes/admin/orderRoutes.js](../../BE/src/routes/admin/orderRoutes.js) | Sửa | Biến `orderController` và năm tham chiếu callback | Nối router với các export mới, giữ nguyên contract HTTP và middleware |
 
-Tài liệu được cập nhật/tạo trong cùng tác vụ: `docs/2026-11-14-duyet-trang-thai-don-hang.md` và báo cáo này. Không tạo, xóa file code hoặc thêm test file mới.
+Tài liệu được cập nhật/tạo trong cùng tác vụ: `docs/code-changes/2026-11-14-order-status-approval-change-log.md` và báo cáo này. Không tạo, xóa file code hoặc thêm test file mới.
 
 ## C. Phân tích chi tiết từng file code
 
