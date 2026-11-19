@@ -140,3 +140,37 @@ Lệnh từng lát cắt: `node --test tests/catalogAuthGuard.test.js`. Sau khi 
 `git diff --check` toàn repo phát hiện một dòng trống EOF trong `docs/code-changes/2026-11-14-product-search-change-log.md`, thuộc thay đổi người dùng có sẵn. Không sửa file ngoài phạm vi để che kết quả kiểm tra. Kiểm tra diff/whitespace trong phạm vi task được ghi trong báo cáo Code Review độc lập.
 
 Review độc lập đã hoàn tất: **Standards 0 finding, Spec 0 finding**, tổng hợp tại [báo cáo Code Review](../code-reviews/2026-11-19-khac-phuc-lo-hong-catalog-auth-code-review.md). Kiểm tra cú pháp đủ 6 file JS đạt; 22 liên kết Markdown nội bộ trong ba tài liệu không có link hỏng. Giữ toàn bộ thay đổi chưa commit của người dùng; không commit, push, merge, reset hoặc thao tác worktree khác.
+
+## Cập nhật 2026-11-19 — Chuẩn hóa khai báo middleware
+
+### A. Yêu cầu và phạm vi
+
+Theo yêu cầu sửa cách viết mã nguồn và mục 2.3–2.4 của AGENTS.md, chuẩn hóa khai báo/export của middleware catalog. Đây là chỉnh sửa cục bộ không đổi hành vi; tái sử dụng kế hoạch catalog-auth-guard hiện có, không tạo kế hoạch hoặc phỏng vấn riêng theo ngoại lệ RULE 0.4 và RULE 1.6. Phần này ghi kết quả lần chỉnh sửa hiện tại, tách khỏi kết quả kiểm thử lịch sử ở trên.
+
+### B. File mã nguồn thay đổi trong lần cập nhật
+
+| File | Loại | Thành phần | Mục đích |
+| --- | --- | --- | --- |
+| [requireCatalogOperator.js](../../BE/src/middleware/requireCatalogOperator.js) | Sửa | Khai báo và export requireCatalogOperator | Tuân thủ mẫu middleware CommonJS |
+
+### C. Chi tiết trước và sau
+
+Trước: khai báo trực tiếp bằng `module.exports = async function requireCatalogOperator(req, res, next) { ... };`. Sau: khai báo `const requireCatalogOperator = async (req, res, next) => { ... };`, rồi `module.exports = requireCatalogOperator;` ở cuối file. Dùng đúng mẫu bắt buộc thay vì gộp khai báo và export; module vẫn xuất trực tiếp cùng middleware ba tham số để bốn router hiện có sử dụng. Giữ nguyên dependency, comment, encoding, kiểu xuống dòng và toàn bộ thân hàm. Không tạo, xóa hoặc sửa file mã nguồn khác.
+
+### D. Luồng xử lý
+
+Route → requireAuth → requireCatalogOperator → upload/validator → controller → service → model/database. Middleware tiếp tục đọc User theo req.user.id, chặn user thiếu/bị khóa/sai role bằng 403, cập nhật role/status rồi next() khi được phép; lỗi truy vấn tiếp tục qua next(error).
+
+### E. Đánh giá triển khai
+
+Chỉ đổi hình thức khai báo và vị trí export; không đổi truy vấn, quyền admin/staff, response, schema, dependency hoặc interface import. Hàm không sử dụng this/arguments nên chuyển sang arrow function phù hợp quy ước. Tài liệu gốc được cập nhật tại chỗ, giữ ngày tạo và tên task.
+
+### F. Kiểm thử và đối chiếu
+
+- `node --check src/middleware/requireCatalogOperator.js` chạy từ BE: đạt.
+- `git diff --check`: đạt. Đã rà soát staged, unstaged và untracked; chỉ có middleware và báo cáo này thay đổi, không có staged/untracked.
+- Liên kết mã nguồn thêm trong mục B đã kiểm tra tồn tại; không thay đổi liên kết lịch sử.
+- `node --test --test-reporter=tap tests/catalogAuthGuard.test.js` chạy từ BE: exit 1; 19 test cấp cao báo hookFailed vì SequelizeConnectionRefusedError trong before hook tạo schema test. Chưa chạy được ma trận HTTP và chưa xác nhận hồi quy qua MySQL trong lần cập nhật này; không dùng số pass lịch sử làm kết quả hiện tại.
+- Đối chiếu AC-01/02/03 của kế hoạch: phần xử lý tương ứng và thứ tự guard giữ nguyên qua diff; kiểm chứng runtime cả ba AC hiện bị giới hạn bởi kết nối MySQL.
+- Đối chiếu yêu cầu bổ sung về convention: đạt mẫu const async arrow và export riêng cuối file theo mục 2.4; giữ export trực tiếp tương thích nơi gọi.
+- Không chạy lint/build frontend; BE không khai báo script lint/build. Không thêm test mới cho thay đổi hình thức khai báo.

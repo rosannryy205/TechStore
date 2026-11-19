@@ -1,7 +1,7 @@
 const User = require("../models/userModel");
 
 // Chạy sau requireAuth; luôn đọc quyền hiện tại, không tin role/status trong JWT.
-module.exports = async function requireCatalogOperator(req, res, next) {
+const requireCatalogOperator = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.user.id, {
       attributes: ["id", "role", "status"],
@@ -21,3 +21,5 @@ module.exports = async function requireCatalogOperator(req, res, next) {
     return next(error);
   }
 };
+
+module.exports = requireCatalogOperator;
