@@ -1,8 +1,8 @@
 import { httpRequest } from "@/services/api/httpClient";
 
 export const cartService = {
-  getCart: async () => {
-    const res = await httpRequest("/api/cart");
+  getCart: async ({ signal } = {}) => {
+    const res = await httpRequest("/api/cart", { signal });
     return res?.data?.items ?? [];
   },
 
@@ -13,16 +13,18 @@ export const cartService = {
     });
   },
 
-  updateQuantity: async (variantId, quantity) => {
+  updateQuantity: async (variantId, quantity, { signal } = {}) => {
     return await httpRequest(`/api/cart/items/${variantId}`, {
       method: "PUT",
       body: JSON.stringify({ quantity }),
+      signal,
     });
   },
 
-  removeFromCart: async (variantId) => {
+  removeFromCart: async (variantId, { signal } = {}) => {
     return await httpRequest(`/api/cart/items/${variantId}`, {
       method: "DELETE",
+      signal,
     });
   },
 };

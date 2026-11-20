@@ -145,9 +145,9 @@ const deniedActors = [
   { name: "JWT sai chữ ký", token: () => `auth_token=${jwt.sign({ userId: 1 }, randomUUID())}`, status: 401 },
   { name: "JWT hết hạn", token: () => `auth_token=${jwt.sign({ userId: 1 }, process.env.JWT_SECRET, { expiresIn: -1 })}`, status: 401 },
   { name: "Customer active", token: () => cookie(3), status: 403 },
-  { name: "Staff bị khóa", token: () => cookie(4), status: 403 },
-  { name: "Admin bị khóa", token: () => cookie(5), status: 403 },
-  { name: "user không tồn tại", token: () => cookie(999), status: 403 },
+  { name: "Staff bị khóa", token: () => cookie(4), status: 403, code: "ACCOUNT_LOCKED" },
+  { name: "Admin bị khóa", token: () => cookie(5), status: 403, code: "ACCOUNT_LOCKED" },
+  { name: "user không tồn tại", token: () => cookie(999), status: 401 },
   { name: "JWT khai role admin nhưng DB là customer", token: () => `auth_token=${jwt.sign({ userId: 3, role: "admin", status: 1 }, process.env.JWT_SECRET)}`, status: 403 },
 ];
 
@@ -158,9 +158,15 @@ for (const actor of deniedActors) {
       await t.test(`${method} ${route}`, async () => {
         const result = await api(route, { method, body, token: actor.token() });
         assert.equal(result.status, actor.status);
+        const expectedMessage = actor.code
+          ? "Tài khoản của bạn đã bị khóa hoặc tạm ngưng."
+          : actor.status === 401
+            ? "Unauthorized"
+            : "Forbidden: Bạn không có quyền thực hiện thao tác này.";
         assert.deepEqual(result.payload, {
           success: false,
-          message: actor.status === 401 ? "Unauthorized" : "Forbidden: Bạn không có quyền thực hiện thao tác này.",
+          message: expectedMessage,
+          ...(actor.code ? { code: actor.code } : {}),
         });
         assert.deepEqual(await catalogSnapshot(), snapshot);
       });
@@ -286,7 +292,7 @@ test("JWT cũ bị thu hồi quyền ngay khi DB khóa, đổi role hoặc xóa 
   await actor.update({ role: "admin" });
   assert.equal((await api("/api/admin/brands", { token })).status, 200);
   await actor.destroy();
-  assert.equal((await api("/api/admin/brands", { token })).status, 403);
+  assert.equal((await api("/api/admin/brands", { token })).status, 401);
 });
 
 test("Review vẫn admin-only và các API đọc công khai vẫn truy cập được", async () => {

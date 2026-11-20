@@ -1,13 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/authContext";
 import { orderService } from "@/services/api/client/orderService";
 
 export function useCheckout() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, loading: isAuthLoading } = useAuth();
 
-  const { cartItems, cartTotal } = location.state || {};
-  const isInvalidCart = !cartItems || !cartTotal;
+  const { cartItems, cartTotal, userId } = location.state || {};
+  const currentUserId = user?.id;
+  const isInvalidCart = !currentUserId || userId !== currentUserId || !cartItems || !cartTotal;
+  const checkoutSession = useRef(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -24,10 +28,17 @@ export function useCheckout() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (isInvalidCart) {
+    if (!isAuthLoading && isInvalidCart) {
       navigate("/cart", { replace: true });
     }
-  }, [isInvalidCart, navigate]);
+  }, [isAuthLoading, isInvalidCart, navigate]);
+
+  useEffect(() => {
+    if (isInvalidCart) return;
+    const controller = new AbortController();
+    checkoutSession.current = controller;
+    return () => controller.abort();
+  }, [currentUserId, isInvalidCart]);
 
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -35,7 +46,8 @@ export function useCheckout() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    const signal = checkoutSession.current?.signal;
+    if (isInvalidCart || isSubmitting || !signal || signal.aborted) return;
 
     if (!formData.firstName.trim() || !formData.lastName.trim()) {
       setError("Please enter your first and last name");
@@ -69,7 +81,8 @@ export function useCheckout() {
         payment_method: formData.paymentMethod,
       };
 
-      const payload = await orderService.createOrder(orderData);
+      const payload = await orderService.createOrder(orderData, { signal });
+      if (signal.aborted) return;
 
       window.dispatchEvent(new Event("cart:updated"));
 
@@ -78,15 +91,15 @@ export function useCheckout() {
         replace: true,
       });
     } catch (err) {
-      setError(err?.message || "Failed to place order. Please try again.");
+      if (!signal.aborted) setError(err?.message || "Failed to place order. Please try again.");
     } finally {
-      setIsSubmitting(false);
+      if (!signal.aborted) setIsSubmitting(false);
     }
   };
 
   return {
-    cartItems: cartItems || [],
-    cartTotal: cartTotal || 0,
+    cartItems: isInvalidCart ? [] : cartItems,
+    cartTotal: isInvalidCart ? 0 : cartTotal,
     isInvalidCart,
     formData,
     updateField,

@@ -1,10 +1,11 @@
 import { httpRequest } from "@/services/api/httpClient";
 
 export const orderService = {
-  createOrder: async (orderData) => {
+  createOrder: async (orderData, { signal } = {}) => {
     return await httpRequest("/api/orders", {
       method: "POST",
       body: JSON.stringify(orderData),
+      signal,
     });
   },
 
