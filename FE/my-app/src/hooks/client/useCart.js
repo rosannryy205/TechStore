@@ -1,18 +1,40 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/authContext";
 import { cartService } from "@/services/api/client/cartService";
 import defaultProductImage from "@/assets/product.jpg";
 
+const EMPTY_CART_ITEMS = [];
+
 export function useCart() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
 
-  const [cartItems, setCartItems] = useState([]);
+  const [cart, setCart] = useState(null);
   const [loadingCart, setLoadingCart] = useState(false);
   const [error, setError] = useState(null);
-  const [updatingItemId, setUpdatingItemId] = useState(null);
+  const [updatingItem, setUpdatingItem] = useState(null);
   const [hasMounted, setHasMounted] = useState(false);
+  const cartSession = useRef(null);
+
+  const cartItems = userId && cart?.userId === userId ? cart.items : EMPTY_CART_ITEMS;
+  const updatingItemId = updatingItem && updatingItem.userId === userId ? updatingItem.id : null;
+
+  const updateCartItems = useCallback((updateItems) => {
+    setCart((previousCart) => {
+      const previousItems = previousCart && previousCart.userId === userId
+        ? previousCart.items
+        : EMPTY_CART_ITEMS;
+      return { userId, items: updateItems(previousItems) };
+    });
+  }, [userId]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    cartSession.current = userId ? controller : null;
+    return () => controller.abort();
+  }, [userId]);
 
   const cartTotal = useMemo(() => {
     return cartItems.reduce((acc, item) => {
@@ -29,10 +51,13 @@ export function useCart() {
     );
   }, [cartItems]);
 
-  const fetchCart = useCallback(async () => {
+  const fetchCart = useCallback(async (signal) => {
     if (authLoading) return;
-    if (!isAuthenticated) {
-      setCartItems([]);
+    if (!userId) {
+      setCart(null);
+      setLoadingCart(false);
+      setUpdatingItem(null);
+      setError(null);
       return;
     }
 
@@ -40,7 +65,8 @@ export function useCart() {
       setLoadingCart(true);
       setError(null);
 
-      const items = await cartService.getCart();
+      const items = await cartService.getCart({ signal });
+      if (signal.aborted) return;
 
       const mapped = items.map((it) => {
         const variant = it.variant ?? {};
@@ -81,25 +107,32 @@ export function useCart() {
         };
       });
 
-      setCartItems(mapped);
+      setCart({ userId, items: mapped });
     } catch (e) {
+      if (signal.aborted) return;
       setError(e?.message || "Failed to load cart.");
-      setCartItems([]);
+      setCart(null);
     } finally {
-      setLoadingCart(false);
-      setHasMounted(true);
+      if (!signal.aborted) {
+        setLoadingCart(false);
+        setHasMounted(true);
+      }
     }
-  }, [authLoading, isAuthenticated]);
+  }, [authLoading, userId]);
 
   useEffect(() => {
-    const run = async () => {
-      await fetchCart();
-    };
-    run();
+    const controller = new AbortController();
+    queueMicrotask(() => {
+      if (!controller.signal.aborted) fetchCart(controller.signal);
+    });
+    return () => controller.abort();
   }, [fetchCart]);
 
   const handleChangeQuantity = useCallback(
     async (item, delta) => {
+      const signal = cartSession.current?.signal;
+      if (!signal || signal.aborted) return;
+
       const nextQty = item.quantity + delta;
       if (nextQty < 1) return;
 
@@ -108,54 +141,60 @@ export function useCart() {
         return;
       }
 
-      setCartItems((prev) =>
+      updateCartItems((prev) =>
         prev.map((p) => (p.id === item.id ? { ...p, quantity: nextQty } : p))
       );
-      setUpdatingItemId(item.id);
+      setUpdatingItem({ userId, id: item.id });
       setError(null);
 
       try {
-        await cartService.updateQuantity(item.id, nextQty);
-        window.dispatchEvent(new Event("cart:updated"));
+        await cartService.updateQuantity(item.id, nextQty, { signal });
+        if (!signal.aborted) window.dispatchEvent(new Event("cart:updated"));
       } catch (e) {
-        setCartItems((prev) =>
+        if (signal.aborted) return;
+        updateCartItems((prev) =>
           prev.map((p) =>
             p.id === item.id ? { ...p, quantity: item.quantity } : p
           )
         );
         setError(e?.message || "Failed to update quantity.");
       } finally {
-        setUpdatingItemId(null);
+        if (!signal.aborted) setUpdatingItem(null);
       }
     },
-    []
+    [updateCartItems, userId]
   );
 
   const handleRemoveItem = useCallback(async (item) => {
-    setCartItems((prev) => prev.filter((p) => p.id !== item.id));
-    setUpdatingItemId(item.id);
+    const signal = cartSession.current?.signal;
+    if (!signal || signal.aborted) return;
+
+    updateCartItems((prev) => prev.filter((p) => p.id !== item.id));
+    setUpdatingItem({ userId, id: item.id });
     setError(null);
 
     try {
-      await cartService.removeFromCart(item.id);
-      window.dispatchEvent(new Event("cart:updated"));
+      await cartService.removeFromCart(item.id, { signal });
+      if (!signal.aborted) window.dispatchEvent(new Event("cart:updated"));
     } catch (e) {
-      setCartItems((prev) => [...prev, item]);
+      if (signal.aborted) return;
+      updateCartItems((prev) => [...prev, item]);
       setError(e?.message || "Failed to remove item.");
     } finally {
-      setUpdatingItemId(null);
+      if (!signal.aborted) setUpdatingItem(null);
     }
-  }, []);
+  }, [updateCartItems, userId]);
 
   const handleCheckout = useCallback(() => {
     if (cartItems.length === 0 || hasUnavailableItems) return;
     navigate("/checkout", {
       state: {
+        userId,
         cartItems,
         cartTotal,
       },
     });
-  }, [cartItems, cartTotal, hasUnavailableItems, navigate]);
+  }, [userId, cartItems, cartTotal, hasUnavailableItems, navigate]);
 
   return {
     cartItems,

@@ -97,3 +97,12 @@ _Avoid_: Blacklist exclusion, Raw model toJSON
 Ranh giới phân quyền bảo vệ dữ liệu người dùng, quy định danh sách toàn bộ tài khoản (danh bạ khách hàng) là tài nguyên bảo mật chỉ dành riêng cho quản trị viên tối cao (Admin đang hoạt động), từ chối triệt để mọi truy cập từ khách vãng lai (401) hoặc tài khoản khách hàng và nhân viên không có thẩm quyền (403).
 _Avoid_: Public user list, Open user directory
 
+**Account Status Boundary**:
+Rào chắn kiểm soát trạng thái tài khoản bắt buộc tại tầng xác thực (`requireAuth` và `authService`), yêu cầu mọi định danh người dùng không chỉ có chữ ký JWT hợp lệ mà phải tồn tại thực tế trong cơ sở dữ liệu và ở trạng thái hoạt động (`status = 1`). Mọi tài khoản bị khóa (`status = 0`) hoặc đã bị xóa lập tức bị từ chối truy cập (401/403) và dọn dẹp phiên làm việc.
+_Avoid_: Soft check, Client-side auth guard, Unverified JWT session
+
+**Immediate Session Invalidation**:
+Cơ chế vô hiệu hóa phiên làm việc tức thời, đảm bảo rằng ngay khi trạng thái tài khoản bị chuyển sang khóa (`status = 0`) hoặc bị xóa trên cơ sở dữ liệu, mọi JWT đã phát hành trước đó đều mất hiệu lực ngay lập tức trước khi bất kỳ thao tác đọc hoặc ghi dữ liệu nào diễn ra.
+_Avoid_: Delayed logout, Token expiration waiting, Silent session keep-alive
+
+

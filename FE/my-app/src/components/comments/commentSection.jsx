@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useState } from "react";
+import { useProductReviews } from "@/hooks/client/useProductReviews";
 import CommentForm from "./commentForm";
 import CommentItem from "./commentItem";
-
-import { API_BASE_URL } from "@/constants/api";
 
 // Số comment hiển thị mỗi lần load.
 const INITIAL_VISIBLE_COUNT = 5;
@@ -10,7 +9,7 @@ const LOAD_MORE_COUNT = 5;
 
 /**
  * CommentSection
- * - Component tổng quản lý state & data, gọi API thật từ backend.
+ * - Hiển thị bình luận và các thao tác do useProductReviews cung cấp.
  * - Loading state: Skeleton UI.
  * - Empty state: chưa có bình luận.
  * - Error state: lỗi tải dữ liệu.
@@ -24,156 +23,25 @@ export default function CommentSection({
   user,
   onRequireLogin,
 }) {
-  const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const isAdmin = user?.role === "admin";
   const currentUserId = user?.id;
-
-  // Kiểm tra user đã mua hàng chưa (mặc định false khi chưa đăng nhập).
+  const {
+    comments,
+    loading,
+    error,
+    isSubmitting,
+    reloadReviews,
+    handleSubmitComment,
+    handleLike,
+    handleReply,
+  } = useProductReviews(productId, currentUserId);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const isAdmin = user?.role === "admin";
   const hasPurchased = isAuthenticated;
 
-  // Tải danh sách review từ backend.
-  const loadReviews = useCallback(async () => {
-    if (!productId) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/reviews?productId=${productId}`,
-      );
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      setComments(json?.data ?? []);
-    } catch {
-      setError("Không thể tải bình luận. Vui lòng thử lại.");
-      setComments([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [productId]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchReviews = async () => {
-      if (!productId) return;
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch(
-          `${API_BASE_URL}/api/reviews?productId=${productId}`,
-          { signal: controller.signal },
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        setComments(json?.data ?? []);
-      } catch (e) {
-        if (e?.name === "AbortError") return;
-        setError("Không thể tải bình luận. Vui lòng thử lại.");
-        setComments([]);
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-
-    fetchReviews();
-    return () => controller.abort();
-  }, [productId]);
-
-  // Sắp xếp theo thời gian mới nhất (backend đã sắp, giữ nguyên).
-  const sortedComments = useMemo(() => comments, [comments]);
-
-  // Comment hiển thị (giới hạn).
-  const visibleComments = useMemo(
-    () => sortedComments.slice(0, visibleCount),
-    [sortedComments, visibleCount],
-  );
-
-  const hasMore = visibleCount < sortedComments.length;
-
+  const visibleComments = comments.slice(0, visibleCount);
+  const hasMore = visibleCount < comments.length;
   const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + LOAD_MORE_COUNT);
-  };
-
-  // Gửi comment mới lên backend (kèm media).
-  const handleSubmitComment = async ({ rating, formData }) => {
-    setIsSubmitting(true);
-    try {
-      formData.append("productId", String(productId));
-      formData.append("rating", String(rating));
-
-      const res = await fetch(`${API_BASE_URL}/api/reviews`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(payload?.message || `HTTP ${res.status}`);
-      }
-
-      // Tải lại danh sách để hiển thị comment mới (pending).
-      await loadReviews();
-    } catch (e) {
-      setError(e?.message || "Không thể gửi bình luận.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Thích comment.
-  const handleLike = async (comment) => {
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/reviews/${comment.id}/like`,
-        {
-          method: "POST",
-          credentials: "include",
-        },
-      );
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(payload?.message || `HTTP ${res.status}`);
-      }
-
-      // Cập nhật likeCount từ server.
-      setComments((prev) =>
-        prev.map((c) =>
-          c.id === comment.id
-            ? { ...c, likeCount: payload?.data?.likeCount ?? c.likeCount }
-            : c,
-        ),
-      );
-    } catch {
-      // Bỏ qua lỗi like, không làm hỏng UX.
-    }
-  };
-
-  // Admin reply.
-  const handleReply = async (comment, replyText) => {
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/reviews/${comment.id}/replies`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: replyText }),
-        },
-      );
-      const payload = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(payload?.message || `HTTP ${res.status}`);
-      }
-      // Tải lại để hiển thị reply mới.
-      await loadReviews();
-    } catch {
-      // Bỏ qua lỗi reply.
-    }
+    setVisibleCount((previousCount) => previousCount + LOAD_MORE_COUNT);
   };
 
   // Skeleton loading.
@@ -226,7 +94,7 @@ export default function CommentSection({
         </p>
         <button
           type="button"
-          onClick={loadReviews}
+          onClick={reloadReviews}
           className="mt-4 inline-flex items-center justify-center rounded-full bg-[#0066cc] text-white text-[14px] font-normal px-5 py-2 hover:bg-[#0071e3] active:scale-95 transition-all cursor-pointer border-none outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
           style={{
             fontFamily: "SF Pro Text, system-ui, -apple-system, sans-serif",
@@ -256,7 +124,7 @@ export default function CommentSection({
           Đánh giá sản phẩm
         </h2>
         <span className="text-[14px] text-[#7a7a7a]">
-          {sortedComments.length} đánh giá
+          {comments.length} đánh giá
         </span>
       </div>
 
@@ -316,7 +184,7 @@ export default function CommentSection({
                       "SF Pro Text, system-ui, -apple-system, sans-serif",
                   }}
                 >
-                  Xem thêm bình luận ({sortedComments.length - visibleCount})
+                  Xem thêm bình luận ({comments.length - visibleCount})
                 </button>
               </div>
             )}

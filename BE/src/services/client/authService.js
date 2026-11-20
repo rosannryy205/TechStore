@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const User = require("../../models/userModel");
+const assertActiveAccount = require("../../utils/assertActiveAccount");
 const { toPrivateUser, USER_PRIVATE_FIELDS } = require("../../utils/userSerializer");
 
 const buildJwt = ({ userId }) => {
@@ -23,7 +24,7 @@ const loginService = async ({ email, password }) => {
 
   const user = await User.findOne({
     where: { email: normalizedEmail },
-    attributes: [...USER_PRIVATE_FIELDS, "password"],
+    attributes: [...USER_PRIVATE_FIELDS, "password", "status"],
   });
 
   if (!user) {
@@ -39,6 +40,7 @@ const loginService = async ({ email, password }) => {
     throw err;
   }
 
+  assertActiveAccount(user);
   const token = buildJwt({ userId: user.id });
 
   return {
@@ -53,15 +55,10 @@ const loginService = async ({ email, password }) => {
  */
 const meService = async ({ userId }) => {
   const user = await User.findByPk(userId, {
-    attributes: [...USER_PRIVATE_FIELDS],
+    attributes: [...USER_PRIVATE_FIELDS, "status"],
   });
 
-  if (!user) {
-    const err = new Error("User not found");
-    err.statusCode = 404;
-    throw err;
-  }
-
+  assertActiveAccount(user);
   return toPrivateUser(user);
 };
 

@@ -106,15 +106,20 @@ describe("User privacy HTTP", () => {
   });
 
   test("AC-01: khách, customer, staff và admin bị khóa không đọc được danh sách", async () => {
-    for (const { cookie, status, message } of [
+    for (const { cookie, status, message, code } of [
       { status: 401, message: "Unauthorized" },
       { cookie: createSessionCookie(1), status: 403, message: "Access denied. Admin only" },
       { cookie: createSessionCookie(2), status: 403, message: "Access denied. Admin only" },
-      { cookie: createSessionCookie(3), status: 403, message: "Tài khoản đã bị khóa" },
+      {
+        cookie: createSessionCookie(3),
+        status: 403,
+        message: "Tài khoản của bạn đã bị khóa hoặc tạm ngưng.",
+        code: "ACCOUNT_LOCKED",
+      },
     ]) {
       const result = await request("/api/users", { cookie });
       assert.equal(result.status, status);
-      assert.deepEqual(result.payload, { success: false, message });
+      assert.deepEqual(result.payload, { success: false, message, ...(code ? { code } : {}) });
     }
   });
 

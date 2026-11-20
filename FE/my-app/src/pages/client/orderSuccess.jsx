@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useAuth } from "@/contexts/authContext";
 import { SF_TEXT } from "@/constants/typography";
 import OrderSuccessBanner from "@/components/client/orderSuccess/orderSuccessBanner";
 import OrderItemsSummary from "@/components/client/orderSuccess/orderItemsSummary";
@@ -9,14 +10,16 @@ export default function OrderSuccess() {
   const location = useLocation();
   const navigate = useNavigate();
   const { order } = location.state || {};
+  const { user, loading: isAuthLoading } = useAuth();
+  const canViewOrder = Boolean(user && order && order.user_id === user.id);
 
   useEffect(() => {
-    if (!order) {
+    if (!isAuthLoading && !canViewOrder) {
       navigate("/", { replace: true });
     }
-  }, [order, navigate]);
+  }, [isAuthLoading, canViewOrder, navigate]);
 
-  if (!order) {
+  if (!canViewOrder) {
     return null;
   }
 

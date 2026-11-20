@@ -1,4 +1,9 @@
 const authService = require("../../services/client/authService");
+const {
+  AUTH_COOKIE_NAME,
+  getAuthCookieOptions,
+  clearAuthCookie,
+} = require("../../utils/authCookie");
 
 /**
  * POST /api/auth/login
@@ -10,13 +15,8 @@ const loginController = async (req, res, next) => {
     const { email, password } = req.body || {};
     const { token, user } = await authService.loginService({ email, password });
 
-    // Cookie options
-    const isProd = process.env.NODE_ENV === "production";
-
-    res.cookie("auth_token", token, {
-      httpOnly: true,
-      secure: isProd, // production cần https
-      sameSite: isProd ? "none" : "lax",
+    res.cookie(AUTH_COOKIE_NAME, token, {
+      ...getAuthCookieOptions(),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (đồng bộ với JWT_EXPIRES_IN)
     });
 
@@ -32,12 +32,7 @@ const loginController = async (req, res, next) => {
  */
 const logoutController = async (req, res, next) => {
   try {
-    const isProd = process.env.NODE_ENV === "production";
-    res.clearCookie("auth_token", {
-      httpOnly: true,
-      secure: isProd,
-      sameSite: isProd ? "none" : "lax",
-    });
+    clearAuthCookie(res);
 
     return res.status(200).json({ success: true });
   } catch (err) {
@@ -53,8 +48,12 @@ const meController = async (req, res, next) => {
   try {
     const user = await authService.meService({ userId: req.user.id });
     return res.status(200).json({ success: true, data: { user } });
-  } catch (err) {
-    return next(err);
+  } catch (error) {
+    // Trạng thái có thể thay đổi sau truy vấn của requireAuth.
+    if (error.statusCode === 401 || error.code === "ACCOUNT_LOCKED") {
+      clearAuthCookie(res);
+    }
+    return next(error);
   }
 };
 

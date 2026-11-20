@@ -4,10 +4,11 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useCallback,
 } from "react";
-import { httpRequest } from "@/services/api/httpClient";
+import { AUTH_UNAUTHORIZED_EVENT, httpRequest } from "@/services/api/httpClient";
 
 /**
  * AuthContext
@@ -21,6 +22,14 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const refreshController = useRef(null);
+
+  const clearSession = useCallback(() => {
+    refreshController.current?.abort();
+    refreshController.current = null;
+    setUser(null);
+    setLoading(false);
+  }, []);
 
   /**
    * refreshMe
@@ -28,14 +37,21 @@ export function AuthProvider({ children }) {
    * - nếu 401 => user = null
    */
   const refreshMe = useCallback(async () => {
+    refreshController.current?.abort();
+    const controller = new AbortController();
+    refreshController.current = controller;
     setLoading(true);
+
     try {
-      const payload = await httpRequest("/api/auth/me");
-      setUser(payload?.data?.user ?? null);
+      const payload = await httpRequest("/api/auth/me", { signal: controller.signal });
+      if (!controller.signal.aborted) setUser(payload?.data?.user ?? null);
     } catch {
-      setUser(null);
+      if (!controller.signal.aborted) setUser(null);
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        refreshController.current = null;
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -45,18 +61,24 @@ export function AuthProvider({ children }) {
         method: "POST",
       });
     } finally {
-      setUser(null);
+      clearSession();
     }
-  }, []);
+  }, [clearSession]);
 
   // Lần mount đầu: tự gọi me để khôi phục session
   useEffect(() => {
+    window.addEventListener(AUTH_UNAUTHORIZED_EVENT, clearSession);
+
     const initializeAuth = async () => {
       await refreshMe();
     };
 
     initializeAuth();
-  }, [refreshMe]);
+    return () => {
+      window.removeEventListener(AUTH_UNAUTHORIZED_EVENT, clearSession);
+      refreshController.current?.abort();
+    };
+  }, [clearSession, refreshMe]);
 
   const value = useMemo(() => {
     return {

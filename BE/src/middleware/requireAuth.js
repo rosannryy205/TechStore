@@ -1,27 +1,42 @@
 const jwt = require("jsonwebtoken");
 
-/**
- * Middleware: requireAuth
- * - Đọc JWT từ cookie (httpOnly) và verify.
- * - Nếu hợp lệ: gắn req.user.
- * - Nếu không: trả 401.
- */
-module.exports = function requireAuth(req, res, next) {
-  try {
-    // Tên cookie cần đồng bộ với set ở login
-    const token = req.cookies?.auth_token;
+const User = require("../models/userModel");
+const assertActiveAccount = require("../utils/assertActiveAccount");
+const { AUTH_COOKIE_NAME, clearAuthCookie } = require("../utils/authCookie");
 
-    if (!token) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
-
-    const secret = process.env.JWT_SECRET;
-    const payload = jwt.verify(token, secret);
-
-    // payload dự kiến: { userId }
-    req.user = { id: payload.userId };
-    return next();
-  } catch (err) {
+const requireAuth = async (req, res, next) => {
+  const token = req.cookies?.[AUTH_COOKIE_NAME];
+  if (!token) {
     return res.status(401).json({ success: false, message: "Unauthorized" });
   }
+
+  let payload;
+  try {
+    payload = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    clearAuthCookie(res);
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  if (!Number.isSafeInteger(payload?.userId) || payload.userId <= 0) {
+    clearAuthCookie(res);
+    return res.status(401).json({ success: false, message: "Unauthorized" });
+  }
+
+  try {
+    const user = await User.findByPk(payload.userId, {
+      attributes: ["id", "role", "status"],
+    });
+
+    assertActiveAccount(user);
+    req.user = { id: user.id, role: user.role, status: user.status };
+    return next();
+  } catch (error) {
+    if (error.statusCode === 401 || error.code === "ACCOUNT_LOCKED") {
+      clearAuthCookie(res);
+    }
+    return next(error);
+  }
 };
+
+module.exports = requireAuth;
