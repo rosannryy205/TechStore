@@ -1,11 +1,12 @@
 const User = require("../../models/userModel");
+const { toPrivateUser, USER_PRIVATE_FIELDS } = require("../../utils/userSerializer");
 
 const getAllUsers = async () => {
   const users = await User.findAll({
-    attributes: { exclude: ["password"] }, // loại bỏ password khỏi kết quả trả về
+    attributes: [...USER_PRIVATE_FIELDS],
   });
 
-  return users;
+  return users.map(toPrivateUser);
 };
 
 /**
@@ -18,7 +19,7 @@ const getAllUsers = async () => {
 const updateProfile = async (userId, data) => {
   const { name, phone, address } = data || {};
 
-  const user = await User.findByPk(userId);
+  const user = await User.findByPk(userId, { attributes: ["id"] });
   if (!user) {
     const err = new Error("User not found");
     err.statusCode = 404;
@@ -35,12 +36,11 @@ const updateProfile = async (userId, data) => {
     await User.update(updateData, { where: { id: userId } });
   }
 
-  // Trả về user mới (không kèm password)
   const updatedUser = await User.findByPk(userId, {
-    attributes: { exclude: ["password"] },
+    attributes: [...USER_PRIVATE_FIELDS],
   });
 
-  return updatedUser;
+  return toPrivateUser(updatedUser);
 };
 
 module.exports = {
