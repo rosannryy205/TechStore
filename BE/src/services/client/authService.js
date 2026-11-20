@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const User = require("../../models/userModel");
+const { toPrivateUser, USER_PRIVATE_FIELDS } = require("../../utils/userSerializer");
 
 const buildJwt = ({ userId }) => {
   // JWT đặt trong cookie httpOnly nên client không đọc được token.
@@ -22,7 +23,7 @@ const loginService = async ({ email, password }) => {
 
   const user = await User.findOne({
     where: { email: normalizedEmail },
-    attributes: ["id", "name", "email", "avatar", "role", "password"],
+    attributes: [...USER_PRIVATE_FIELDS, "password"],
   });
 
   if (!user) {
@@ -42,13 +43,7 @@ const loginService = async ({ email, password }) => {
 
   return {
     token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      role: user.role,
-    },
+    user: toPrivateUser(user),
   };
 };
 
@@ -58,7 +53,7 @@ const loginService = async ({ email, password }) => {
  */
 const meService = async ({ userId }) => {
   const user = await User.findByPk(userId, {
-    attributes: ["id", "name", "email", "phone", "address", "avatar", "role"],
+    attributes: [...USER_PRIVATE_FIELDS],
   });
 
   if (!user) {
@@ -67,15 +62,7 @@ const meService = async ({ userId }) => {
     throw err;
   }
 
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    phone: user.phone,
-    address: user.address,
-    avatar: user.avatar,
-    role: user.role,
-  };
+  return toPrivateUser(user);
 };
 
 module.exports = {

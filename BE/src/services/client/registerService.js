@@ -6,6 +6,7 @@ const User = require("../../models/userModel");
 const EmailVerificationCode = require("../../models/emailVerificationCodeModel");
 
 const { sendVerificationEmail } = require("./emailService");
+const { toPrivateUser } = require("../../utils/userSerializer");
 
 const randomDigits10 = () => {
   // Tạo chuỗi số random độ dài đúng 10 chữ số
@@ -166,7 +167,7 @@ const registerUser = async ({ email, password, code }) => {
     password: hashedPassword,
   });
 
-  return createdUser.toJSON();
+  return toPrivateUser(createdUser);
 };
 
 module.exports = {

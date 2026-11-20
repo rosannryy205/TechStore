@@ -88,3 +88,12 @@ _Avoid_: Data filler, Fake script
 **Local Asset Bundle**:
 Tập hợp các tài nguyên hình ảnh được lưu trữ trực tiếp dưới dạng tệp vật lý trong dự án (`BE/uploads/`), đảm bảo tính tự chủ và khả năng hiển thị ổn định không phụ thuộc vào dịch vụ bên ngoài.
 _Avoid_: Online assets, CDN links
+
+**User Allowlist Serialization**:
+Cơ chế lọc và chuẩn hóa dữ liệu người dùng tại tầng Backend chỉ cho phép các trường an toàn đã xác định trước (như id, name, email, phone, address, avatar, role, created_at) được xuất ra trong phản hồi API, loại bỏ triệt để và chủ động các trường nhạy cảm như password hash, mã OTP verification code hash hoặc token nội bộ.
+_Avoid_: Blacklist exclusion, Raw model toJSON
+
+**User Privacy Boundary**:
+Ranh giới phân quyền bảo vệ dữ liệu người dùng, quy định danh sách toàn bộ tài khoản (danh bạ khách hàng) là tài nguyên bảo mật chỉ dành riêng cho quản trị viên tối cao (Admin đang hoạt động), từ chối triệt để mọi truy cập từ khách vãng lai (401) hoặc tài khoản khách hàng và nhân viên không có thẩm quyền (403).
+_Avoid_: Public user list, Open user directory
+
