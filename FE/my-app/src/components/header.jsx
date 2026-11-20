@@ -195,35 +195,36 @@ export default function Header() {
   const [cartCount, setCartCount] = useState(0);
   const location = useLocation();
 
-  const fetchCartCount = useCallback(async () => {
-    if (!isAuthenticated) {
-      setCartCount(0);
-      return;
-    }
-
-    try {
-      const items = await cartService.getCart();
-      const total = items.reduce(
-        (acc, it) => acc + Number(it.quantity ?? 0),
-        0,
-      );
-      setCartCount(total);
-    } catch {
-      setCartCount(0);
-    }
-  }, [isAuthenticated]);
-
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      fetchCartCount();
-    }, 0);
-    return () => window.clearTimeout(timer);
-  }, [fetchCartCount, location.pathname]);
+    const controller = new AbortController();
+    const { signal } = controller;
+    const fetchCartCount = async () => {
+      if (!isAuthenticated) {
+        setCartCount(0);
+        return;
+      }
 
-  useEffect(() => {
+      try {
+        const items = await cartService.getCart({ signal });
+        if (signal.aborted) return;
+        const total = items.reduce(
+          (count, item) => count + Number(item.quantity ?? 0),
+          0,
+        );
+        setCartCount(total);
+      } catch {
+        if (!signal.aborted) setCartCount(0);
+      }
+    };
+
+    const timer = window.setTimeout(fetchCartCount, 0);
     window.addEventListener("cart:updated", fetchCartCount);
-    return () => window.removeEventListener("cart:updated", fetchCartCount);
-  }, [fetchCartCount]);
+    return () => {
+      controller.abort();
+      window.clearTimeout(timer);
+      window.removeEventListener("cart:updated", fetchCartCount);
+    };
+  }, [isAuthenticated, location.pathname, user?.id]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -467,7 +468,7 @@ export default function Header() {
               aria-label="Giỏ hàng"
             >
               <BagIcon />
-              {cartCount > 0 && (
+              {isAuthenticated && cartCount > 0 && (
                 <span
                   className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#3B82F6] text-white text-[10px] font-bold flex items-center justify-center leading-none border-2 border-white shadow-2xs"
                   style={{ fontFamily: MONO_TEXT }}

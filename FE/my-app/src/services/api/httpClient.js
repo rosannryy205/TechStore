@@ -21,6 +21,9 @@ export async function httpRequest(endpoint, options = {}) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok) {
+    if (response.status === 401 && !options.signal?.aborted && typeof window !== "undefined") {
+      window.dispatchEvent(new window.CustomEvent("auth:unauthorized"));
+    }
     const errorMsg = payload?.message || `Lỗi HTTP: ${response.status}`;
     const error = new Error(errorMsg);
     error.status = response.status;

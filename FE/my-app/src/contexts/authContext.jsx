@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useCallback,
 } from "react";
@@ -21,23 +22,40 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const profileRequest = useRef(null);
 
-  /**
-   * refreshMe
-   * - gọi /api/auth/me với credentials:'include'
-   * - nếu 401 => user = null
-   */
-  const refreshMe = useCallback(async () => {
-    setLoading(true);
-    try {
-      const payload = await httpRequest("/api/auth/me");
-      setUser(payload?.data?.user ?? null);
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
+  const clearSession = useCallback(() => {
+    // Phản hồi /me đang chờ không được khôi phục phiên vừa kết thúc.
+    profileRequest.current?.abort();
+    setUser(null);
+    setLoading(false);
   }, []);
+
+  const loadSession = useCallback(() => {
+    profileRequest.current?.abort();
+    const controller = new AbortController();
+    profileRequest.current = controller;
+    return httpRequest("/api/auth/me", { signal: controller.signal })
+      .then(
+        (payload) => {
+          if (!controller.signal.aborted) setUser(payload?.data?.user ?? null);
+        },
+        () => {
+          if (!controller.signal.aborted) setUser(null);
+        },
+      )
+      .finally(() => {
+        if (profileRequest.current === controller) {
+          profileRequest.current = null;
+          if (!controller.signal.aborted) setLoading(false);
+        }
+      });
+  }, []);
+
+  const refreshMe = useCallback(() => {
+    setLoading(true);
+    return loadSession();
+  }, [loadSession]);
 
   const logout = useCallback(async () => {
     try {
@@ -45,18 +63,18 @@ export function AuthProvider({ children }) {
         method: "POST",
       });
     } finally {
-      setUser(null);
+      clearSession();
     }
-  }, []);
+  }, [clearSession]);
 
-  // Lần mount đầu: tự gọi me để khôi phục session
   useEffect(() => {
-    const initializeAuth = async () => {
-      await refreshMe();
+    window.addEventListener("auth:unauthorized", clearSession);
+    loadSession();
+    return () => {
+      window.removeEventListener("auth:unauthorized", clearSession);
+      profileRequest.current?.abort();
     };
-
-    initializeAuth();
-  }, [refreshMe]);
+  }, [clearSession, loadSession]);
 
   const value = useMemo(() => {
     return {

@@ -1,25 +1,13 @@
-const User = require("../models/userModel");
-
-// Chạy sau requireAuth; luôn đọc quyền hiện tại, không tin role/status trong JWT.
-const requireCatalogOperator = async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.user.id, {
-      attributes: ["id", "role", "status"],
+// Chạy sau requireAuth, dùng quyền đã đọc từ DB cho request hiện tại.
+const requireCatalogOperator = (req, res, next) => {
+  const user = req.user;
+  if (user?.status !== 1 || !["admin", "staff"].includes(user.role)) {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden: Bạn không có quyền thực hiện thao tác này.",
     });
-
-    if (!user || user.status !== 1 || !["admin", "staff"].includes(user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: "Forbidden: Bạn không có quyền thực hiện thao tác này.",
-      });
-    }
-
-    req.user.role = user.role;
-    req.user.status = user.status;
-    return next();
-  } catch (error) {
-    return next(error);
   }
+  return next();
 };
 
 module.exports = requireCatalogOperator;

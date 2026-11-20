@@ -145,9 +145,9 @@ const deniedActors = [
   { name: "JWT sai chữ ký", token: () => `auth_token=${jwt.sign({ userId: 1 }, randomUUID())}`, status: 401 },
   { name: "JWT hết hạn", token: () => `auth_token=${jwt.sign({ userId: 1 }, process.env.JWT_SECRET, { expiresIn: -1 })}`, status: 401 },
   { name: "Customer active", token: () => cookie(3), status: 403 },
-  { name: "Staff bị khóa", token: () => cookie(4), status: 403 },
-  { name: "Admin bị khóa", token: () => cookie(5), status: 403 },
-  { name: "user không tồn tại", token: () => cookie(999), status: 403 },
+  { name: "Staff bị khóa", token: () => cookie(4), status: 401 },
+  { name: "Admin bị khóa", token: () => cookie(5), status: 401 },
+  { name: "user không tồn tại", token: () => cookie(999), status: 401 },
   { name: "JWT khai role admin nhưng DB là customer", token: () => `auth_token=${jwt.sign({ userId: 3, role: "admin", status: 1 }, process.env.JWT_SECRET)}`, status: 403 },
 ];
 
@@ -280,13 +280,13 @@ test("JWT cũ bị thu hồi quyền ngay khi DB khóa, đổi role hoặc xóa 
   const token = cookie(actor.id);
   assert.equal((await api("/api/admin/brands", { token })).status, 200);
   await actor.update({ status: 0 });
-  assert.equal((await api("/api/admin/brands", { token })).status, 403);
+  assert.equal((await api("/api/admin/brands", { token })).status, 401);
   await actor.update({ status: 1, role: "customer" });
   assert.equal((await api("/api/admin/brands", { token })).status, 403);
   await actor.update({ role: "admin" });
   assert.equal((await api("/api/admin/brands", { token })).status, 200);
   await actor.destroy();
-  assert.equal((await api("/api/admin/brands", { token })).status, 403);
+  assert.equal((await api("/api/admin/brands", { token })).status, 401);
 });
 
 test("Review vẫn admin-only và các API đọc công khai vẫn truy cập được", async () => {

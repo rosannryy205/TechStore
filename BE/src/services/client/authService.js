@@ -22,7 +22,7 @@ const loginService = async ({ email, password }) => {
 
   const user = await User.findOne({
     where: { email: normalizedEmail },
-    attributes: ["id", "name", "email", "avatar", "role", "password"],
+    attributes: ["id", "name", "email", "avatar", "role", "password", "status"],
   });
 
   if (!user) {
@@ -32,7 +32,7 @@ const loginService = async ({ email, password }) => {
   }
 
   const ok = await bcrypt.compare(password, user.password);
-  if (!ok) {
+  if (!ok || user.status !== 1) {
     const err = new Error("Invalid credentials");
     err.statusCode = 401;
     throw err;
@@ -58,12 +58,18 @@ const loginService = async ({ email, password }) => {
  */
 const meService = async ({ userId }) => {
   const user = await User.findByPk(userId, {
-    attributes: ["id", "name", "email", "phone", "address", "avatar", "role"],
+    attributes: ["id", "name", "email", "phone", "address", "avatar", "role", "status"],
   });
 
   if (!user) {
     const err = new Error("User not found");
     err.statusCode = 404;
+    throw err;
+  }
+
+  if (user.status !== 1) {
+    const err = new Error("Unauthorized");
+    err.statusCode = 401;
     throw err;
   }
 

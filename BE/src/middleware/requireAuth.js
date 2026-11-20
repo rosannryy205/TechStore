@@ -1,27 +1,46 @@
 const jwt = require("jsonwebtoken");
 
-/**
- * Middleware: requireAuth
- * - Đọc JWT từ cookie (httpOnly) và verify.
- * - Nếu hợp lệ: gắn req.user.
- * - Nếu không: trả 401.
- */
-module.exports = function requireAuth(req, res, next) {
+const User = require("../models/userModel");
+
+const rejectSession = (res, shouldClearCookie) => {
+  if (shouldClearCookie) {
+    // Đồng bộ cờ cookie với login/logout trong authController.
+    const isProd = process.env.NODE_ENV === "production";
+    res.clearCookie("auth_token", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+    });
+  }
+  return res.status(401).json({ success: false, message: "Unauthorized" });
+};
+
+const requireAuth = async (req, res, next) => {
+  const token = req.cookies?.auth_token;
+  if (!token) return rejectSession(res, false);
+
+  let payload;
   try {
-    // Tên cookie cần đồng bộ với set ở login
-    const token = req.cookies?.auth_token;
+    payload = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    return rejectSession(res, true);
+  }
 
-    if (!token) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
+  if (!Number.isSafeInteger(payload?.userId) || payload.userId < 1) {
+    return rejectSession(res, true);
+  }
 
-    const secret = process.env.JWT_SECRET;
-    const payload = jwt.verify(token, secret);
+  try {
+    const user = await User.findByPk(payload.userId, {
+      attributes: ["id", "role", "status"],
+    });
+    if (!user || user.status !== 1) return rejectSession(res, true);
 
-    // payload dự kiến: { userId }
-    req.user = { id: payload.userId };
+    req.user = { id: user.id, role: user.role, status: user.status };
     return next();
-  } catch (err) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
+  } catch (error) {
+    return next(error);
   }
 };
+
+module.exports = requireAuth;

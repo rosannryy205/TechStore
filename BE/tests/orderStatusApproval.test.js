@@ -81,7 +81,7 @@ test("online phải paid trước giao, đơn legacy không được suy đoán;
   const legacy = await order({ payment_status: null });
   assert.equal((await advance(legacy, "pending", "confirmed")).code, "NEEDS_REVIEW");
   assert.equal((await api("/api/admin/orders", { user: 3 })).status, 403);
-  assert.equal((await api("/api/admin/orders", { user: 5 })).status, 403);
+  assert.equal((await api("/api/admin/orders", { user: 5 })).status, 401);
   const unauthenticated = await fetch(`${baseUrl}/api/admin/orders`);
   assert.equal(unauthenticated.status, 401);
 });

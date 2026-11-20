@@ -88,3 +88,11 @@ _Avoid_: Data filler, Fake script
 **Local Asset Bundle**:
 Tập hợp các tài nguyên hình ảnh được lưu trữ trực tiếp dưới dạng tệp vật lý trong dự án (`BE/uploads/`), đảm bảo tính tự chủ và khả năng hiển thị ổn định không phụ thuộc vào dịch vụ bên ngoài.
 _Avoid_: Online assets, CDN links
+
+**Account Status**:
+Trạng thái kích hoạt của tài khoản người dùng trong hệ thống gồm Hoạt động (status = 1) và Bị khóa (status = 0); chỉ tài khoản Hoạt động mới được phép tạo phiên đăng nhập mới và thực hiện các thao tác cần xác thực.
+_Avoid_: User status, Ban status, Is active flag
+
+**Session Revocation**:
+Hành vi tức thời làm mất hiệu lực của phiên làm việc (JWT cookie) ngay khi tài khoản chuyển sang trạng thái Bị khóa hoặc bị xóa khỏi hệ thống, đảm bảo không có đột biến dữ liệu nào được thực hiện bằng phiên cũ.
+_Avoid_: Token destroy, Kick user, Force logout

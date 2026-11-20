@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/authContext";
 import { cartService } from "@/services/api/client/cartService";
 import defaultProductImage from "@/assets/product.jpg";
 
 export function useCart() {
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [cartItems, setCartItems] = useState([]);
@@ -13,6 +13,7 @@ export function useCart() {
   const [error, setError] = useState(null);
   const [updatingItemId, setUpdatingItemId] = useState(null);
   const [hasMounted, setHasMounted] = useState(false);
+  const cartSession = useRef(null);
 
   const cartTotal = useMemo(() => {
     return cartItems.reduce((acc, item) => {
@@ -29,10 +30,12 @@ export function useCart() {
     );
   }, [cartItems]);
 
-  const fetchCart = useCallback(async () => {
-    if (authLoading) return;
+  const fetchCart = useCallback(async (signal) => {
     if (!isAuthenticated) {
       setCartItems([]);
+      setLoadingCart(false);
+      setError(null);
+      setUpdatingItemId(null);
       return;
     }
 
@@ -40,7 +43,8 @@ export function useCart() {
       setLoadingCart(true);
       setError(null);
 
-      const items = await cartService.getCart();
+      const items = await cartService.getCart({ signal });
+      if (signal.aborted) return;
 
       const mapped = items.map((it) => {
         const variant = it.variant ?? {};
@@ -83,23 +87,31 @@ export function useCart() {
 
       setCartItems(mapped);
     } catch (e) {
+      if (signal.aborted) return;
       setError(e?.message || "Failed to load cart.");
       setCartItems([]);
     } finally {
-      setLoadingCart(false);
-      setHasMounted(true);
+      if (!signal.aborted) {
+        setLoadingCart(false);
+        setHasMounted(true);
+      }
     }
-  }, [authLoading, isAuthenticated]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
+    const controller = new AbortController();
+    cartSession.current = controller;
     const run = async () => {
-      await fetchCart();
+      await fetchCart(controller.signal);
     };
     run();
-  }, [fetchCart]);
+    return () => controller.abort();
+  }, [fetchCart, user?.id]);
 
   const handleChangeQuantity = useCallback(
     async (item, delta) => {
+      const signal = cartSession.current?.signal;
+      if (!isAuthenticated || !signal || signal.aborted) return;
       const nextQty = item.quantity + delta;
       if (nextQty < 1) return;
 
@@ -115,9 +127,10 @@ export function useCart() {
       setError(null);
 
       try {
-        await cartService.updateQuantity(item.id, nextQty);
-        window.dispatchEvent(new Event("cart:updated"));
+        await cartService.updateQuantity(item.id, nextQty, { signal });
+        if (!signal.aborted) window.dispatchEvent(new Event("cart:updated"));
       } catch (e) {
+        if (signal.aborted) return;
         setCartItems((prev) =>
           prev.map((p) =>
             p.id === item.id ? { ...p, quantity: item.quantity } : p
@@ -125,45 +138,48 @@ export function useCart() {
         );
         setError(e?.message || "Failed to update quantity.");
       } finally {
-        setUpdatingItemId(null);
+        if (!signal.aborted) setUpdatingItemId(null);
       }
     },
-    []
+    [isAuthenticated]
   );
 
   const handleRemoveItem = useCallback(async (item) => {
+    const signal = cartSession.current?.signal;
+    if (!isAuthenticated || !signal || signal.aborted) return;
     setCartItems((prev) => prev.filter((p) => p.id !== item.id));
     setUpdatingItemId(item.id);
     setError(null);
 
     try {
-      await cartService.removeFromCart(item.id);
-      window.dispatchEvent(new Event("cart:updated"));
+      await cartService.removeFromCart(item.id, { signal });
+      if (!signal.aborted) window.dispatchEvent(new Event("cart:updated"));
     } catch (e) {
+      if (signal.aborted) return;
       setCartItems((prev) => [...prev, item]);
       setError(e?.message || "Failed to remove item.");
     } finally {
-      setUpdatingItemId(null);
+      if (!signal.aborted) setUpdatingItemId(null);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   const handleCheckout = useCallback(() => {
-    if (cartItems.length === 0 || hasUnavailableItems) return;
+    if (!isAuthenticated || cartItems.length === 0 || hasUnavailableItems) return;
     navigate("/checkout", {
       state: {
         cartItems,
         cartTotal,
       },
     });
-  }, [cartItems, cartTotal, hasUnavailableItems, navigate]);
+  }, [isAuthenticated, cartItems, cartTotal, hasUnavailableItems, navigate]);
 
   return {
-    cartItems,
-    cartTotal,
-    hasUnavailableItems,
-    loadingCart,
+    cartItems: isAuthenticated ? cartItems : [],
+    cartTotal: isAuthenticated ? cartTotal : 0,
+    hasUnavailableItems: isAuthenticated && hasUnavailableItems,
+    loadingCart: isAuthenticated && loadingCart,
     authLoading,
-    error,
+    error: isAuthenticated ? error : null,
     updatingItemId,
     hasMounted,
     handleChangeQuantity,
